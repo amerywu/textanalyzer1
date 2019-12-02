@@ -69,13 +69,12 @@ def _extract_from_one_provider(es, provider, pipe, dependencies_dict:Dict):
             continue
         if index_name in ignore_indices_list:
             continue
-        #log.getLogger().info("Retrieved " + str(count) + " rows.")
         if count > limit:
             break
         if provider in index_name  :
             df = _retrieve_index_content(es, index_name, provider, limit)
             if not df.empty:
-                #log.getLogger().debug("Retrieved " + index_name + ": row count " + str(df.shape))
+                log.getLogger().debug("Retrieved " + index_name + ": row count " + str(df.shape))
                 count = count + df.shape[0]
                 df_per_space_list.append(df)
 
@@ -97,7 +96,9 @@ def initiate_extraction(pipe, dependencies_dict):
     es = es_conn.connectToES()
     return _extract(es, pipe, dependencies_dict)
 
-def scrolled_search(es, index_name):
+def scrolled_search(es, index_name, limit):
+    log.getLogger().info(index_name)
+    total = 0
     page_list = []
     page = es.search(
         index= index_name,
@@ -113,7 +114,11 @@ def scrolled_search(es, index_name):
     page_list.append(page)
 
     # Start scrolling
+    log.getLogger().info("scrolling")
     while (scroll_size > 0):
+        total = total + scroll_size
+        if total > limit:
+            break
         page = es.scroll(scroll_id=sid, scroll='2m')
         # Update the scroll ID
         sid = page['_scroll_id']
@@ -121,6 +126,7 @@ def scrolled_search(es, index_name):
         scroll_size = len(page['hits']['hits'])
         #print ("scroll size: " + str(scroll_size))
         page_list.append(page)
+        log.getLogger().info("still scrolling")
     return page_list
 
 
@@ -137,7 +143,7 @@ def _retrieve_index_content(es, index_name, provider, limit):
 
     rows_list = []
     log.getLogger().debug("Retrieving content for " + index_name)
-    space_content_page_list = scrolled_search(es, index_name)
+    space_content_page_list = scrolled_search(es, index_name, limit)
     count = 0
     for space_content_result in space_content_page_list:
         for content in space_content_result['hits']['hits']:

@@ -22,8 +22,31 @@ class TextRank:
     def perform(self, package: merm_model.PipelinePackage):
         word_embeddings_list = self._word_embeddings()
         #sentences = package.dependencies_dict["utils"].corpus_as_sentence_list(package)
-        tokenized_sentences = package.dependencies_dict["utils"].corpus_as_tokenized_sentence_linked_doc_list(package, True)
-        log.getLogger().info("we have " + str(len(tokenized_sentences)) + "sentences")
+        tokenized_sentences_by_doc = package.dependencies_dict["utils"].corpus_as_tokenized_sentence_linked_doc_list_grouped_by_doc(package, True)
+        log.getLogger().info("we have " + str(len(tokenized_sentences_by_doc)) + " docs")
+        rank_by_dict = self._prep_rank_by_doc_dict(package)
+        count = 0
+        for docid, sentences in tokenized_sentences_by_doc.items():
+            sentence_by_rank_dict = self.rank_by_document(sentences,word_embeddings_list, package)
+            for key, value in sentence_by_rank_dict.items():
+                sentence_list_for_that_rank = rank_by_dict[key]
+                sentence_list_for_that_rank.append(value)
+            if count % 100 == 0:
+                print(count)
+            count = count + 1
+        sentence_by_rank_dict
+
+    def _prep_rank_by_doc_dict(self, package):
+        rank_dict = {}
+        top_n_rankings_count = package.dependencies_dict["env"].config.getint("ml_instructions",
+                                                                              "text_rank_top_n_rankings")
+        for i in range(top_n_rankings_count):
+            rank_dict[i]  = []
+        return rank_dict
+
+
+
+    def rank_by_document(self, tokenized_sentences, word_embeddings_list, package):
         clean_sentences_list = []
         for linked_sentence_doc in tokenized_sentences:
             clean_sentences_list.append(linked_sentence_doc.raw)
@@ -32,9 +55,15 @@ class TextRank:
 
         scores = self._score_generator(clean_sentences_list,sentence_vectors)
         ranked_sentences = sorted(((scores[i], s) for i, s in enumerate(clean_sentences_list)), reverse=True)
-        top_n_rankings_count = package.dependencies_dict["env"].config.getint("ml_instruction", "text_rank_top_n_rankings")
+        top_n_rankings_count = package.dependencies_dict["env"].config.getint("ml_instructions", "text_rank_top_n_rankings")
+        sentence_by_rank_dict = {}
         for i in range(top_n_rankings_count):
-            print(ranked_sentences[i][1])
+            if i < len(ranked_sentences):
+                #print(ranked_sentences[i][1])
+
+                sentence_by_rank_dict[i] = ranked_sentences[i][1]
+
+        return sentence_by_rank_dict
 
 
 
@@ -81,7 +110,6 @@ class TextRank:
             for j in range(len(sentences)):
                 if i != j:
                     value = cosine_similarity(sentence_vectors[i].reshape(1, 100), sentence_vectors[j].reshape(1, 100))[0, 0]
-                    print(value)
                     similarity_matrix[i , j] = value
 
         # Before proceeding further, let’s convert the similarity matrix sim_mat into a graph. The nodes of this graph will

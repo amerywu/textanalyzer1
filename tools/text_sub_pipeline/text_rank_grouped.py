@@ -4,7 +4,7 @@ import tools.model.model_classes as merm_model
 import tools.utils.log as log
 
 # This class breaks a corpus into subsets and runs LDA on each subset
-class GensimLdaGrouped_SubPipe:
+class TextRankGrouped_SubPipe:
 
     def __init__(self):
         pass

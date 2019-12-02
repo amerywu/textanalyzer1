@@ -68,6 +68,27 @@ def corpus_as_tokenized_sentence_linked_doc_list(package:data_models.PipelinePac
             log.getLogger().info(doc_by_sentence.tokens)
     return sentence_list
 
+
+def corpus_as_tokenized_sentence_linked_doc_list_grouped_by_doc(package:data_models.PipelinePackage, clean_raw_sentences = False):
+    log.getLogger().warning("#########################################")
+    log.getLogger().warning("Converting entire corpus into a list of tokenized sentences")
+    log.getLogger().warning("This is going to take forever and a day")
+    log.getLogger().warning("Go make a cup of tea")
+
+    doc_dict = {}
+    for doc in package.linked_document_list:
+        sentence_list = []
+        linked_doc_by_sentence_list = split_linked_doc_by_sentence(doc)
+        for doc_by_sentence in linked_doc_by_sentence_list:
+            doc_by_sentence.tokens = clean_string_for_tokenizing(doc_by_sentence.raw.lower()).split()
+            if clean_raw_sentences == True:
+                doc_by_sentence.raw=clean_raw_content(doc_by_sentence.raw)
+
+            sentence_list.append(doc_by_sentence)
+            log.getLogger().info(doc_by_sentence.tokens)
+        doc_dict[doc.uid] = sentence_list
+    return doc_dict
+
 def gensim_clean_string(textIn, _strip_tags=True, _split_alphanumeric = True, _strip_nonalphanumeric= True, _strip_muliple_whitespace = True, _strip_short=True, _short_charcount_min=3, _strip_punctuation = False):
 
     cleaner = textIn
