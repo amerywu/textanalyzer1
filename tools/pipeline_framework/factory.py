@@ -14,6 +14,7 @@ from tools.text_sub_pipeline import gensim_lda_grouped
 from  tools.text_pipeline import rake_analysis
 from tools.text_pipeline import text_cleaner
 from tools.text_pipeline import text_rank
+from tools.text_sub_pipeline import text_rank_grouped
 
 
 
@@ -36,6 +37,7 @@ class PipelineManifest:
         "GensimLDA": tools.text_pipeline.gensim_latent_dirichlet_allocation.GensimLDA(),
         "GroupByESIndex": tools.text_pipeline.document_filter.GroupByESIndex(),
         "GensimLdaGrouped_SubPipe": tools.text_sub_pipeline.gensim_lda_grouped.GensimLdaGrouped_SubPipe(),
+        "TextRankGrouped_SubPipe": tools.text_sub_pipeline.text_rank_grouped.TextRankGrouped_SubPipe(),
         "GensimTopicSimilarityAnalysis": tools.text_pipeline.gensim_latent_dirichlet_allocation.GensimTopicSimilarityAnalysis(),
         "GensimTopicReduction" : tools.text_pipeline.gensim_latent_dirichlet_allocation.GensimTopicReduction(),
         "TopicLoader" : tools.text_pipeline.topic_comparator.TopicLoader(),

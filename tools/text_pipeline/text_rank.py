@@ -34,7 +34,8 @@ class TextRank:
             if count % 100 == 0:
                 print(count)
             count = count + 1
-        sentence_by_rank_dict
+        package.any_analysis_dict["text_rank"] = rank_by_dict
+        return package
 
     def _prep_rank_by_doc_dict(self, package):
         rank_dict = {}

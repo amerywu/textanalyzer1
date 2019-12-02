@@ -135,6 +135,8 @@ def _process_row(content,provider):
         return _process_job_row(content)
     elif provider == "possible-phrase":
         return _process_pp_row(content)
+    elif provider == "reddit":
+        return _process_reddit_row(content)
     else:
         raise Exception("Unknown Provider " + provider)
 
@@ -183,6 +185,7 @@ def _process_job_row(content):
         "detailLevel": content['_source']['detailLevel'],
         "jobFinal": content['_source']['jobFinal'],
         "indexname": content['_index'],
+        "groupedBy": content['_source']['majorFinal'],
         "jobTitles": content['_source']['jobTitles'],
         "location": content['_source']['location'],
         "majorFinal": content['_source']['majorFinal'],
@@ -194,6 +197,17 @@ def _process_job_row(content):
         "relatedMajors": content['_source']['relatedMajors'],
         "workSkills": content['_source']['workSkills'],
         "yearsExperience": content['_source']['yearsExperienceAsInt'],
+    }
+    return row
+
+def _process_reddit_row(content):
+    row = {
+        "category": content['_source']['category'],
+        "content": content['_source']['content'],
+        "doc_id": content['_source']['doc_id'],
+        "id": content['_id'],
+        "doc_url": content['_source']['doc_url'],
+        "created": content['_source']['created'],
     }
     return row
 

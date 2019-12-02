@@ -66,6 +66,7 @@ def corpus_as_tokenized_sentence_linked_doc_list(package:data_models.PipelinePac
 
             sentence_list.append(doc_by_sentence)
             log.getLogger().info(doc_by_sentence.tokens)
+
     return sentence_list
 
 
@@ -161,7 +162,7 @@ def split_linked_doc_by_sentence(linked_doc: merm_model.LinkedDocument):
         linked_sentence = merm_model.LinkedDocument(sentence, linked_doc.title, [], linked_doc.source, linked_doc.ui,
                                                       linked_doc.provider,  linked_doc.uid, linked_doc.index_name,
                                                       linked_doc.space, linked_doc.scores, linked_doc.corpus_doc,
-                                                      linked_doc.any_analysis,linked_doc.updated)
+                                                      linked_doc.any_analysis,linked_doc.updated, linked_doc.groupedBy)
         linked_sentence_list.append(linked_sentence)
     return linked_sentence_list
 

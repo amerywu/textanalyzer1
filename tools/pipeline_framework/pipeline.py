@@ -42,7 +42,7 @@ _sklearn_lda_steps = [
 _text_rank = [
     (10, "TextCleaner_DF"),
     (20, "DataframeToListOfLists"),
-    (30, "TextRank")
+    (30, "TextRankGrouped_SubPipe")
 
 
 ]

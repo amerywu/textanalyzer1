@@ -42,7 +42,9 @@ def linked_document_from_dict(dict, provider):
                               None,
                               None,
                               None,
-                              None
+                              None,
+                              dict["groupedBy"]
+
                               )
     else:
         raise Exception("Unknown provider " + provider)
@@ -63,7 +65,8 @@ class LinkedDocument:
                  scores: dict,
                  corpus_doc: List[Tuple[int, float]],
                  any_analysis,
-                 updated: int):
+                 updated: int,
+                 groupedBy: str = ""):
 
         self.raw = raw
         self.title = title
@@ -78,6 +81,7 @@ class LinkedDocument:
         self.space = space
         self.scores = scores
         self.updated = updated
+        self.groupedBy = groupedBy
 
     def toString(self):
         return self.ui + " | " + self.title
