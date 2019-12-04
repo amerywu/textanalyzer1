@@ -47,7 +47,7 @@ def corpus_as_sentence_list(package:data_models.PipelinePackage):
         linked_doc_by_sentence_list = split_linked_doc_by_sentence(doc)
         for doc_by_sentence in linked_doc_by_sentence_list:
             sentence_list.append(doc_by_sentence.raw)
-            log.getLogger().info(doc_by_sentence.raw)
+            #log.getLogger().info(doc_by_sentence.raw)
     return sentence_list
 
 
@@ -65,7 +65,7 @@ def corpus_as_tokenized_sentence_linked_doc_list(package:data_models.PipelinePac
                 doc_by_sentence.raw=clean_raw_content(doc_by_sentence.raw)
 
             sentence_list.append(doc_by_sentence)
-            log.getLogger().info(doc_by_sentence.tokens)
+            #log.getLogger().info(doc_by_sentence.tokens)
 
     return sentence_list
 
@@ -86,7 +86,7 @@ def corpus_as_tokenized_sentence_linked_doc_list_grouped_by_doc(package:data_mod
                 doc_by_sentence.raw=clean_raw_content(doc_by_sentence.raw)
 
             sentence_list.append(doc_by_sentence)
-            log.getLogger().info(doc_by_sentence.tokens)
+            #log.getLogger().info(doc_by_sentence.tokens)
         doc_dict[doc.uid] = sentence_list
     return doc_dict
 

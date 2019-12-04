@@ -11,9 +11,9 @@ def run_post_process(package: merm_model.PipelinePackage):
 
     for key in text_rank_results:
 
-        analysis = text_rank_results[key]["text_rank"]
+        analysis = text_rank_results[key]
         if "ict" in  type(analysis).__name__:
-            file_name = path +"/" + "TextRank_" + key + ".csv"
+            file_name = path +"/" + "TextRank_" + str(key) + ".csv"
             with open(file_name, 'w') as f:
                 for k in analysis.keys():
                     for sentence in analysis[k]:

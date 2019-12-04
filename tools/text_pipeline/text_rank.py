@@ -55,16 +55,19 @@ class TextRank:
 
 
         scores = self._score_generator(clean_sentences_list,sentence_vectors)
-        ranked_sentences = sorted(((scores[i], s) for i, s in enumerate(clean_sentences_list)), reverse=True)
-        top_n_rankings_count = package.dependencies_dict["env"].config.getint("ml_instructions", "text_rank_top_n_rankings")
-        sentence_by_rank_dict = {}
-        for i in range(top_n_rankings_count):
-            if i < len(ranked_sentences):
-                #print(ranked_sentences[i][1])
+        if len(scores) == 0:
+            return {}
+        else:
+            ranked_sentences = sorted(((scores[i], s) for i, s in enumerate(clean_sentences_list)), reverse=True)
+            top_n_rankings_count = package.dependencies_dict["env"].config.getint("ml_instructions", "text_rank_top_n_rankings")
+            sentence_by_rank_dict = {}
+            for i in range(top_n_rankings_count):
+                if i < len(ranked_sentences):
+                    #print(ranked_sentences[i][1])
 
-                sentence_by_rank_dict[i] = ranked_sentences[i][1]
+                    sentence_by_rank_dict[i] = ranked_sentences[i][1]
 
-        return sentence_by_rank_dict
+            return sentence_by_rank_dict
 
 
 
@@ -117,7 +120,11 @@ class TextRank:
         # represent the sentences and the edges will represent the similarity scores between the sentences. On this graph,
         # we will apply the PageRank algorithm to arrive at the sentence rankings.
 
+        try:
+            nx_graph = nx.from_scipy_sparse_matrix(similarity_matrix)
+            scores = nx.pagerank(nx_graph, max_iter = 200)
+        except Exception as e:
+            log.getLogger().error(str(e))
+            return []
 
-        nx_graph = nx.from_scipy_sparse_matrix(similarity_matrix)
-        scores = nx.pagerank(nx_graph)
         return scores

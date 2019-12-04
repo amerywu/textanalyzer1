@@ -44,7 +44,6 @@ def linked_document_from_dict(dict, provider):
                               None,
                               None,
                               dict["groupedBy"]
-
                               )
     else:
         raise Exception("Unknown provider " + provider)
