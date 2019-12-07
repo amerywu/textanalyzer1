@@ -47,6 +47,7 @@ class PipelineManifest:
         "DfGroupByAnalysis": tools.text_pipeline.df_analysis.DfGroupByAnalysis(),
         "AreasOfStudyDfAnalysis": tools.text_pipeline.job_df_analysis.AreasOfStudyDfAnalysis(),
         "RakeAnalysis": tools.text_pipeline.rake_analysis.RakeAnalysis(),
+        "RakeAnalysisFromTextRank": tools.text_pipeline.rake_analysis.RakeAnalysisFromTextRank(),
         "TextCleaner_DF": tools.text_pipeline.text_cleaner.TextCleaner_Df_Corpus(),
         "TextRank": tools.text_pipeline.text_rank.TextRank(),
 
