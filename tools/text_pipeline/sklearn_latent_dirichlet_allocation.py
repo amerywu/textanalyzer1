@@ -13,7 +13,9 @@ class ScikitLDA:
 
     def perform(self, package: merm_model.PipelinePackage):
         new_model = self._doLDA(package.corpus)
-        new_package = merm_model.PipelinePackage(new_model,package.corpus,package.dict, package.linked_document_list,package.any_analysis_dict, package.dependencies_dict)
+        new_package = merm_model.PipelinePackage(new_model,package.corpus,package.dict,
+                                                 package.linked_document_list,package.any_analysis_dict,
+                                                 package.dependencies_dict)
         log.getLogger().info(new_package.structure())
         return new_package
 

@@ -155,14 +155,20 @@ def tokenize(corpora_list:List[merm_model.LinkedDocument]):
 
     return corpora_list
 
+def tokenize_one_linked_doc(linked_doc:merm_model.LinkedDocument):
+    linked_doc.tokens = clean_string_for_tokenizing(linked_doc.raw.lower()).split()
+    return linked_doc
+
 def split_linked_doc_by_sentence(linked_doc: merm_model.LinkedDocument):
     linked_sentence_list = []
     raw_sentences = linked_doc.raw.split(".")
     for sentence in raw_sentences:
+
         linked_sentence = merm_model.LinkedDocument(sentence, linked_doc.title, [], linked_doc.source, linked_doc.ui,
                                                       linked_doc.provider,  linked_doc.uid, linked_doc.index_name,
                                                       linked_doc.space, linked_doc.scores, linked_doc.corpus_doc,
-                                                      linked_doc.any_analysis,linked_doc.updated, linked_doc.groupedBy)
+                                                      linked_doc.any_analysis,linked_doc.any_inputs, linked_doc.updated, linked_doc.groupedBy)
+        linked_sentence = tokenize_one_linked_doc(linked_sentence)
         linked_sentence_list.append(linked_sentence)
     return linked_sentence_list
 

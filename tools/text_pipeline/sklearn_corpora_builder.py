@@ -19,5 +19,7 @@ class LinkedDocListToScikitLDACorpus:
         matrix = vectorizer.fit_transform(corpus)
         feature_names = vectorizer.get_feature_names()
 
-        new_package = merm_model.PipelinePackage(None,matrix,feature_names,package.linked_document_list,package.any_analysis_dict, package.dependencies_dict)
+        new_package = merm_model.PipelinePackage(None,matrix,feature_names,
+                                                 package.linked_document_list,package.any_analysis_dict,
+                                                 package.any_inputs_dict, package.dependencies_dict)
         return new_package

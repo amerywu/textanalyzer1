@@ -17,7 +17,9 @@ class GensimTfIdfModelBuilder:
 
         model = TfidfModel(package.corpus)  # fit model
 
-        return merm_model.PipelinePackage(model,package.corpus,package.dict,package.linked_document_list,package.any_analysis_dict, package.dependencies_dict)
+        return merm_model.PipelinePackage(model,package.corpus,package.dict,package.linked_document_list,
+                                          package.any_analysis_dict, package.any_inputs_dict,
+                                          package.dependencies_dict)
 
 
 class GensimTfIdfTopTerms:
@@ -48,7 +50,9 @@ class GensimTfIdfTopTerms:
 
         package.any_analysis_dict[package.default_analysis_key()] = top_tf_idf_corpus
 
-        return merm_model.PipelinePackage(package.model, package.corpus, package.dict, package.linked_document_list, package.any_analysis_dict, package.dependencies_dict)
+        return merm_model.PipelinePackage(package.model, package.corpus, package.dict,
+                                          package.linked_document_list, package.any_analysis_dict,
+                                          package.any_inputs_dict, package.dependencies_dict)
 
 
 

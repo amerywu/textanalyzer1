@@ -33,7 +33,7 @@ class ListOfListsToGensimCorpora:
                  res
         log.getLogger().info("Feature count: " + str(len(dictionary.id2token)))
 
-        return data_models.PipelinePackage(None, corpus, dictionary, linked_doc_list, package.any_analysis_dict, package.dependencies_dict)
+        return data_models.PipelinePackage(None, corpus, dictionary, linked_doc_list, package.any_analysis_dict, package.any_inputs_dict, package.dependencies_dict)
 
 
 
@@ -48,9 +48,9 @@ class DataframeToListOfLists:
         log.getLogger().info("Stage: Converting dataframe of documents (previously mapped through DataFrameConvertForPipeline) to tokenized and lemmatized List[List[str]]. Outer List is corpora, inner list is document as bag of words")
         log.getLogger().info("Corpus size: " + str(df.shape))
         corpora_list = self._dfToList(package)
-        token_list = package.dependencies_dict["utils"].tokenize(corpora_list)
-        merm_tools_linkeddocument_list =package.dependencies_dict["utils"].lemmatize_tokens(token_list, package.dependencies_dict["utils"].standard_stop_words())
-        package = data_models.PipelinePackage(None, None, None, merm_tools_linkeddocument_list, package.any_analysis_dict, package.dependencies_dict)
+        tokenized_linked_docs = package.dependencies_dict["utils"].tokenize(corpora_list)
+        #merm_tools_linkeddocument_list =package.dependencies_dict["utils"].lemmatize_tokens(token_list, package.dependencies_dict["utils"].standard_stop_words())
+        package = data_models.PipelinePackage(None, None, None, tokenized_linked_docs, package.any_analysis_dict, package.any_inputs_dict, package.dependencies_dict)
         return package
 
     def _dfToList(self, package:data_models.PipelinePackage):

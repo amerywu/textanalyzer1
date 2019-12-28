@@ -30,20 +30,21 @@ def _typeOrNone(obj):
 def linked_document_from_dict(dict, provider):
 
     if "job" in provider:
-        return LinkedDocument(dict["skills"],
-                              dict["jobFinal"],
-                              None,
-                              dict["indexname"],
-                              None,
-                              provider,
-                              dict["id"],
-                              dict["indexname"],
-                              dict["majorFinal"],
-                              None,
-                              None,
-                              None,
-                              None,
-                              dict["groupedBy"]
+        return LinkedDocument(dict["skills"], #raw
+                              dict["jobFinal"], #title
+                              [], #tokens
+                              dict["indexname"], # src
+                              None, #ui
+                              provider, # provider
+                              dict["id"], # uid
+                              dict["indexname"], #index_name
+                              dict["majorFinal"], # space
+                              None, # scores
+                              [], # corpus_doc
+                              {}, # any_analysis
+                              {}, # any_inputs
+                              0,
+                              dict["groupedBy"] # groupedby
                               )
     else:
         raise Exception("Unknown provider " + provider)
@@ -63,9 +64,10 @@ class LinkedDocument:
                  space: str,
                  scores: dict,
                  corpus_doc: List[Tuple[int, float]],
-                 any_analysis,
+                 any_analysis: dict,
+                 any_inputs: dict,
                  updated: int,
-                 groupedBy: str = ""):
+                 groupedBy: str):
 
         self.raw = raw
         self.title = title
@@ -81,6 +83,7 @@ class LinkedDocument:
         self.scores = scores
         self.updated = updated
         self.groupedBy = groupedBy
+        self.any_inputs = any_inputs
 
     def toString(self):
         return self.ui + " | " + self.title
@@ -110,12 +113,20 @@ class LinkedDocument:
 class PipelinePackage:
 
 
-    def __init__(self, model, corpus, dict, linked_document_list: List[LinkedDocument], any_analysis_dict:Dict, dependencies_dict:Dict):
+    def __init__(self,
+                 model,
+                 corpus,
+                 dict,
+                 linked_document_list: List[LinkedDocument],
+                 any_analysis_dict:  dict,
+                 any_inputs_dict: dict,
+                 dependencies_dict: dict):
         self.model = model
         self.corpus = corpus
         self.dict = dict
         self.linked_document_list = linked_document_list
         self.any_analysis_dict = any_analysis_dict
+        self.any_inputs_dict = any_inputs_dict
         self.dependencies_dict = dependencies_dict
 
         analysis_type = _typeOrNone(self.any_analysis_dict)

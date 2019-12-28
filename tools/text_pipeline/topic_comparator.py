@@ -26,7 +26,9 @@ class TopicLoader:
         package.any_analysis_dict["lda_topics_by_subset_formatted"] = lda_topics_by_subset_formatted
         package.any_analysis_dict["lda_topics_toplevel_formatted"] = lda_topics_toplevel_formatted
 
-        return merm_model.PipelinePackage(package.model,package.corpus,word_to_id,package.linked_document_list,package.any_analysis_dict,package.dependencies_dict)
+        return merm_model.PipelinePackage(package.model,package.corpus,word_to_id,package.linked_document_list,
+                                          package.any_analysis_dict, package.any_inputs_dict,
+                                          package.dependencies_dict)
 
     def code_terms(self, lda_topics_byrow, word_to_id):
         for row in lda_topics_byrow:
@@ -109,7 +111,9 @@ class TopicComparator:
             similarity_dict[source] = result_dict
 
         package.any_analysis_dict["similarity_dict"] = similarity_dict
-        return merm_model.PipelinePackage(package.model,package.corpus,package.dict,package.linked_document_list,package.any_analysis_dict,package.dependencies_dict)
+        return merm_model.PipelinePackage(package.model,package.corpus,package.dict,package.linked_document_list,
+                                          package.any_analysis_dict,package.any_inputs_dict,
+                                          package.dependencies_dict)
 
 
 

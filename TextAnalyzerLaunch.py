@@ -7,6 +7,7 @@ import tools.pipeline_framework.pipeline_process as pipe_process
 import tools.pipeline_framework.pipeline as pipeline
 import tools.utils.text_parsing_utils as utils
 import tools.utils.dfutils as dfutils
+import tools.utils.collectionutils as colutils
 
 def initiate_run():
     try:
@@ -22,6 +23,7 @@ def initiate_run():
         dependencies_dict["pipe_process"] = pipe_process
         dependencies_dict["utils"] = utils
         dependencies_dict["dfutils"] = dfutils
+        dependencies_dict["colutils"] = colutils
 
         while continue_run == True:
             es_extract.initiate_extraction(pipeline.run_pipeline, dependencies_dict)

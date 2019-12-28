@@ -17,7 +17,22 @@ class GroupByESIndex:
     def perform(self, package: merm_model.PipelinePackage):
 
         linked_doc_by_index = {}
+        group_testenv = package.dependencies_dict["env"].config.getboolean("pipeline_instructions","group_testenv")
+        if True == group_testenv:
+            relevant_groups_string = package.dependencies_dict["env"].config["pipeline_instructions"] ["group_testenv_list"]
+            relevant_groups_list = relevant_groups_string.split(",")
+            linked_doc_by_index = self._group_test_groups(package,relevant_groups_list)
+        else:
+            linked_doc_by_index = self._group_all_groups(package)
 
+
+        new_package = merm_model.PipelinePackage(package.model, package.corpus, package.dict, linked_doc_by_index,
+                                                 package.any_analysis, package.any_inputs_dict, package.dependencies_dict)
+        return new_package
+
+
+    def _group_all_groups(self, package):
+        linked_doc_by_index = {}
         for linked_doc in package.linked_document_list:
 
             if linked_doc.groupedBy in linked_doc_by_index:
@@ -27,9 +42,22 @@ class GroupByESIndex:
                 groupby_list.append(linked_doc)
                 linked_doc_by_index[linked_doc.groupedBy] = groupby_list
 
-        new_package = merm_model.PipelinePackage(package.model, package.corpus, package.dict, linked_doc_by_index,
-                                                 package.any_analysis, package.dependencies_dict)
-        return new_package
+        return linked_doc_by_index
+
+    def _group_test_groups(self, package, relevant_groups_list):
+        linked_doc_by_index = {}
+        for linked_doc in package.linked_document_list:
+
+            if linked_doc.groupedBy in relevant_groups_list:
+
+                if linked_doc.groupedBy in linked_doc_by_index:
+                    linked_doc_by_index[linked_doc.groupedBy].append(linked_doc)
+                else:
+                    groupby_list = []
+                    groupby_list.append(linked_doc)
+                    linked_doc_by_index[linked_doc.groupedBy] = groupby_list
+
+        return linked_doc_by_index
 
 
 class StopWordRemoval:

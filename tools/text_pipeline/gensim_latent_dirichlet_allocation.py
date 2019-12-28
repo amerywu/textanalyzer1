@@ -43,7 +43,7 @@ class GensimLDA:
                 topic_dict[index] = words_for_topic
 
             package.any_analysis_dict[package.default_analysis_key()] = topic_dict
-            new_package = merm_model.PipelinePackage(lda_model,package.corpus,package.dict,package.linked_document_list,package.any_analysis_dict, package.dependencies_dict)
+            new_package = merm_model.PipelinePackage(lda_model,package.corpus,package.dict,package.linked_document_list,package.any_analysis_dict, package.any_inputs_dict, package.dependencies_dict)
             return new_package
         else:
             new_package = merm_model.PipelinePackage(None, package.corpus, package.dict,
@@ -64,7 +64,9 @@ class GensimTopicSimilarityAnalysis:
         matching_topics = self._iterate_similar_topics(prepare_data)
         package.any_analysis_dict[package.default_analysis_key()] = matching_topics
 
-        return merm_model.PipelinePackage(package.model,package.corpus,package.dict,package.linked_document_list,package.any_analysis_dict,package.dependencies_dict)
+        return merm_model.PipelinePackage(package.model,package.corpus,package.dict,
+                                          package.linked_document_list,package.any_analysis_dict,
+                                          package.any_inputs_dict, package.dependencies_dict)
 
     def load_top_level_topic_csv(self):
         file = env.config["ml_instructions"]["gensim_top_level_topic_csv"]
@@ -137,7 +139,13 @@ class GensimTopicReduction:
         prepare_data = self._prepare_data(package)
         matching_topics = self._iterate_similar_topics(prepare_data, prepared_reduced_topics)
         package.any_analysis_dict[package.default_analysis_key()] = matching_topics
-        return merm_model.PipelinePackage(package.model,package.corpus,package.dict,package.linked_document_list,package.any_analysis_dict,package.dependencies_dict)
+        return merm_model.PipelinePackage(package.model,
+                                          package.corpus,
+                                          package.dict,
+                                          package.linked_document_list,
+                                          package.any_analysis_dict,
+                                          package.any_inputs_dict,
+                                          package.dependencies_dict)
 
     def load_top_level_topic_csv(self):
         file = env.config["ml_instructions"]["gensim_top_level_topic_csv"]

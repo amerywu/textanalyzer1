@@ -75,7 +75,7 @@ def mkdir(extantPath, newdir):
         os.makedirs(extantPath + "/" + newdir)
     return os.makedirs(extantPath + "/" + newdir)
 
-def print_traceback(header ="\n----EXCEPTION----\n", footer = "\n------------\n", dev_only = False):
+def print_traceback(header ="\n---- EXCEPTION ----\n", footer = "\n------------\n", dev_only = False):
     if test_env() or not dev_only:
         msg = header + traceback.format_exc() + footer
         return msg
@@ -91,4 +91,16 @@ def test_env():
 def test_env_doc_processing_count():
     str_count = config["pipeline_instructions"]["testenv_doc_process_count"]
     return int(str_count)
+
+def read_file(path):
+    print("Opening file: " + str(path))
+    f = open(path, "r")
+    text = f.read()
+    return text
+
+def overwrite_file(path, text):
+    print("Writing file "+ str(path))
+    f = open(path, "w")
+    f.write(text)
+    f.close()
 

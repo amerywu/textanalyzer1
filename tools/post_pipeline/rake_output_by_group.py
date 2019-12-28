@@ -5,7 +5,7 @@ import tools.utils.envutils as env
 
 
 def run_post_process(package: merm_model.PipelinePackage):
-    log.getLogger().info("save text rank results to file")
+    log.getLogger().info("save rake results to file")
     path = env.config["job_instructions"]["output_folder"]
     rake_results = package.any_analysis_dict["rake_all_groups"]
 
@@ -14,6 +14,7 @@ def run_post_process(package: merm_model.PipelinePackage):
         analysis = rake_results[key]
         if "ict" in  type(analysis).__name__:
             file_name = path +"/" + "rake" + str(key) + ".csv"
+            log.getLogger().info("Saving " + file_name)
             with open(file_name, 'w') as f:
                 for rank in analysis.keys():
                     for tuple in analysis[rank]:

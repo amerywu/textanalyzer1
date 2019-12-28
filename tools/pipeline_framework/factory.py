@@ -14,6 +14,7 @@ from tools.text_sub_pipeline import gensim_lda_grouped
 from  tools.text_pipeline import rake_analysis
 from tools.text_pipeline import text_cleaner
 from tools.text_pipeline import text_rank
+from tools.text_pipeline import  word_count
 from tools.text_sub_pipeline import text_rank_grouped
 
 
@@ -49,7 +50,10 @@ class PipelineManifest:
         "RakeAnalysis": tools.text_pipeline.rake_analysis.RakeAnalysis(),
         "RakeAnalysisFromTextRank": tools.text_pipeline.rake_analysis.RakeAnalysisFromTextRank(),
         "TextCleaner_DF": tools.text_pipeline.text_cleaner.TextCleaner_Df_Corpus(),
+        "Lemmatize_Corpus_LinkedDocs" : tools.text_pipeline.text_cleaner.Lemmatize_Corpus_LinkedDocs(),
         "TextRank": tools.text_pipeline.text_rank.TextRank(),
+        "LinkedDocCorpusWordCount": tools.text_pipeline.word_count.LinkedDocCorpusWordCount(),
+        "LinkedDocCorpusStopWordGenerator" : tools.text_pipeline.word_count.LinkedDocCorpusStopWordGenerator(),
 
 
     }

@@ -51,7 +51,8 @@ class GensimLdaGrouped_SubPipe:
                         doc_list):
         package_one_group = merm_model.PipelinePackage(grouped_doc_package.model, grouped_doc_package.corpus,
                                                          grouped_doc_package.dict, doc_list,
-                                                         any_analysis_dict, grouped_doc_package.dependencies_dict)
+                                                         any_analysis_dict, grouped_doc_package.any_inputs_dict,
+                                                         grouped_doc_package.dependencies_dict)
 
         package_one_group = manifest["StopWordRemoval"].perform(package_one_group)
         package_one_group = manifest["ListOfListsToGensimCorpora"].perform(package_one_group)

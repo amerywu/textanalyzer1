@@ -9,11 +9,6 @@ nltk.download('punkt') # one time execution
 import re
 from sklearn.metrics.pairwise import cosine_similarity
 
-
-
-
-
-
 class TextRank:
 
     def __init__(self):
@@ -21,8 +16,10 @@ class TextRank:
 
     def perform(self, package: merm_model.PipelinePackage):
         word_embeddings_list = self._word_embeddings()
+        utils = package.dependencies_dict["utils"]
+        colutils = package.dependencies_dict["colutils"]
         #sentences = package.dependencies_dict["utils"].corpus_as_sentence_list(package)
-        tokenized_sentences_by_doc = package.dependencies_dict["utils"].corpus_as_tokenized_sentence_linked_doc_list_grouped_by_doc(package, True)
+        tokenized_sentences_by_doc = utils.corpus_as_tokenized_sentence_linked_doc_list_grouped_by_doc(package, True)
         log.getLogger().info("we have " + str(len(tokenized_sentences_by_doc)) + " docs")
         rank_by_dict = self._prep_rank_by_doc_dict(package)
         count = 0
@@ -34,7 +31,8 @@ class TextRank:
             if count % 100 == 0:
                 print(count)
             count = count + 1
-        package.any_analysis_dict["text_rank"] = rank_by_dict
+        analysis_key = colutils.incrementing_key("text_rank",package.any_analysis_dict)
+        package.any_analysis_dict[analysis_key] = rank_by_dict
         return package
 
     def _prep_rank_by_doc_dict(self, package):
@@ -80,12 +78,13 @@ class TextRank:
         # consolidated vector for the sentence.
 
         sentence_vectors = []
-        for i in clean_sentences:
-            if len(i) != 0:
-                v = sum([word_embeddings.get(w, np.zeros((100,))) for w in i.split()]) / (len(i.split()) + 0.001)
+        for sentence in clean_sentences:
+            if len(sentence) != 0:
+                v = sum([word_embeddings.get(w, np.zeros((100,))) for w in sentence.split()]) / (len(sentence.split()) + 0.001)
+
             else:
-                v = np.zeros((100,))
-            sentence_vectors.append(v)
+                v = [np.zeros((100,))]
+            #sentence_vectors.append(v)
         return sentence_vectors
 
     def _word_embeddings(self):
@@ -112,7 +111,7 @@ class TextRank:
         similarity_matrix = dok_matrix((sentence_count, sentence_count), dtype=np.float32)
         for i in range(len(sentences)):
             for j in range(len(sentences)):
-                if i != j:
+                if i != j and len(sentence_vectors) > i:
                     value = cosine_similarity(sentence_vectors[i].reshape(1, 100), sentence_vectors[j].reshape(1, 100))[0, 0]
                     similarity_matrix[i , j] = value
 

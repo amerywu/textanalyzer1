@@ -36,7 +36,7 @@ def _extract(es, pipe, dependencies_dict:Dict):
         _extract_from_all_providers(es, pipe, dependencies_dict)
     elif provider == "none":
         _enter_pipeline(
-            merm_model.PipelinePackage(None, None, None, None, None, dependencies_dict), pipe)
+            merm_model.PipelinePackage(None, None, None, None, {}, {}, dependencies_dict), pipe)
     else:
         _extract_from_one_provider(es, provider, pipe, dependencies_dict)
 
@@ -89,7 +89,7 @@ def _extract_from_one_provider(es, provider, pipe, dependencies_dict:Dict):
         log.getLogger().info(msg)
         analysis_dict = {}
         analysis_dict["provider"] = provider
-        _enter_pipeline(merm_model.PipelinePackage(None, complete_corpus_df,None,None,analysis_dict,dependencies_dict), pipe)
+        _enter_pipeline(merm_model.PipelinePackage(None, complete_corpus_df, None, None, analysis_dict,{}, dependencies_dict), pipe)
 
 #Starting point for extraction purpose (pass pipeline in as function to avoid mutually dependent import statements)
 def initiate_extraction(pipe, dependencies_dict):
