@@ -23,10 +23,10 @@ class TextRankGrouped_SubPipe:
         grouped_linked_docs = grouped_doc_package.linked_document_list
         analysis_by_group_rake = {}
         analysis_by_group_text_rank = {}
-
+        minimum_doc_count = package.dependencies_dict["env"].config.getint('ml_instructions', 'minimum_doc_count')
         for sub_corpus_name_untyped , doc_list in grouped_linked_docs.items():
             sub_corpus_name = str(sub_corpus_name_untyped)
-            if len(doc_list) > 100:
+            if len(doc_list) > minimum_doc_count:
 
                 package_one_group = merm_model.PipelinePackage(package.model,
                                                                package.corpus,

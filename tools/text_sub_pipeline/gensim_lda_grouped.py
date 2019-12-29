@@ -3,11 +3,15 @@ import tools.model.model_classes as merm_model
 
 import tools.utils.log as log
 
+
+def analysis_output_label():
+    return "Gensim_LDA_by_subset"
 # This class breaks a corpus into subsets and runs LDA on each subset
 class GensimLdaGrouped_SubPipe:
 
     def __init__(self):
         pass
+
 
     def perform(self, package:merm_model.PipelinePackage):
         mfst = package.dependencies_dict["factory"].PipelineManifest.manifest
@@ -25,6 +29,7 @@ class GensimLdaGrouped_SubPipe:
         lda_corpus_by_group = {}
         lda_dict_by_group = {}
         lda_analysis_by_group = {}
+        minimum_doc_count = package.dependencies_dict["env"].config.getint('ml_instructions', 'minimum_doc_count')
 
         dict_for_group_processing = {}
         dict_for_group_processing["grouped_linked_docs"] = grouped_linked_docs
@@ -34,11 +39,21 @@ class GensimLdaGrouped_SubPipe:
         dict_for_group_processing["lda_analysis_by_group"] = lda_analysis_by_group
 
         for sub_corpus_name , doc_list in grouped_linked_docs.items():
-            if len(doc_list) > 100:
+            if len(doc_list) >= minimum_doc_count:
                self._analyze_subset(grouped_doc_package,dict_for_group_processing,grouped_doc_package.any_analysis_dict,sub_corpus_name,mfst,doc_list)
 
-        package.any_analysis_dict[package.default_analysis_key()] = lda_analysis_by_group
-        new_package = merm_model.PipelinePackage(lda_models_by_group,lda_corpus_by_group,lda_dict_by_group,grouped_linked_docs,package.any_analysis_dict, package.dependencies_dict)
+        if analysis_output_label() in package.any_analysis_dict.keys():
+            all_lda = package.any_analysis_dict[analysis_output_label()]
+            for key, results in lda_analysis_by_group.items():
+               all_lda[key] = results
+
+
+        else:
+            package.any_analysis_dict[analysis_output_label()] = lda_analysis_by_group
+        new_package = merm_model.PipelinePackage(lda_models_by_group,lda_corpus_by_group,
+                                                 lda_dict_by_group,grouped_linked_docs,
+                                                 package.any_analysis_dict, package.any_inputs_dict,
+                                                 package.dependencies_dict)
         return new_package
 
 
@@ -58,10 +73,12 @@ class GensimLdaGrouped_SubPipe:
         package_one_group = manifest["ListOfListsToGensimCorpora"].perform(package_one_group)
         package_one_group = manifest["GensimLDA"].perform(package_one_group)
 
+
+
         dict_for_group_processing["lda_models_by_group"][sub_corpus_name] = package_one_group.model
         dict_for_group_processing["lda_corpus_by_group"][sub_corpus_name] = package_one_group.corpus
         dict_for_group_processing["lda_dict_by_group"][sub_corpus_name] = package_one_group.dict
-        dict_for_group_processing["lda_analysis_by_group"][sub_corpus_name] = package_one_group.any_analysis_dict
+        dict_for_group_processing["lda_analysis_by_group"][sub_corpus_name] = package_one_group.any_analysis_dict[package_one_group.default_analysis_key()]
         overlap_dict = self._topic_overlap(dict_for_group_processing["lda_analysis_by_group"][sub_corpus_name])
         stop_list = self._dynamic_stop_words(overlap_dict, grouped_doc_package.dependencies_dict)
         if len(stop_list) > 4:
@@ -73,11 +90,11 @@ class GensimLdaGrouped_SubPipe:
 
 
 
-    def _topic_overlap(self, lda_analysis_by_group):
+    def _topic_overlap(self, terms_in_group):
 
         word_count_dict = {}
 
-        for space, terms in lda_analysis_by_group["default_analysis_key"].items():
+        for topic, terms in terms_in_group.items():
             words, weights = zip(*terms)
             for word in words:
                 if word in word_count_dict:

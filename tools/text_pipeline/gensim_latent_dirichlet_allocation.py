@@ -47,7 +47,8 @@ class GensimLDA:
             return new_package
         else:
             new_package = merm_model.PipelinePackage(None, package.corpus, package.dict,
-                                                       package.linked_document_list, [], package.dependencies_dict)
+                                                       package.linked_document_list, [], package.any_inputs_dict,
+                                                     package.dependencies_dict)
             return new_package
 
 

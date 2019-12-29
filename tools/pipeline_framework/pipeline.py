@@ -43,7 +43,9 @@ _text_rank = [
     (10, "TextCleaner_DF"),
     (20, "DataframeToListOfLists"),
     (30, "TextRankGrouped_SubPipe"),
-
+    (40, "GensimLdaGrouped_SubPipe"),
+    (50, "TextRankResultsToLinkedDocList"),
+    (60, "GensimLdaGrouped_SubPipe")  ,
 
 
 ]

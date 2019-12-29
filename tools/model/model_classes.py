@@ -128,12 +128,32 @@ class PipelinePackage:
         self.any_analysis_dict = any_analysis_dict
         self.any_inputs_dict = any_inputs_dict
         self.dependencies_dict = dependencies_dict
+        self.cache_dict = {}
 
         analysis_type = _typeOrNone(self.any_analysis_dict)
         if analysis_type == "None":
             self.any_analysis_dict = None
         if "{" not in  analysis_type:
             self.any_analysis_dict = { self.default_analysis_key() : any_analysis_dict}
+
+
+    def cache_linked_docs(self):
+        if type(self.linked_document_list) is list:
+            cached_linked_docs = []
+            for linked_doc in self.linked_document_list:
+                cached_linked_docs.append(linked_doc)
+            self.cache_dict["linked_docs"] = cached_linked_docs
+            self.linked_document_list = []
+        elif type(self.linked_document_list is dict):
+            cached_linked_docs = {}
+            for key, items in self.linked_document_list.items():
+                cached_docs_list = []
+                for linked_doc in items:
+                    cached_docs_list.append(linked_doc)
+                cached_linked_docs[key] = cached_docs_list
+            self.cache_dict["linked_docs"] = cached_linked_docs
+            self.linked_document_list = []
+
 
 
     def default_analysis_key(self):

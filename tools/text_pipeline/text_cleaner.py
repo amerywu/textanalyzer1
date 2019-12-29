@@ -20,7 +20,15 @@ class TextCleaner_Df_Corpus:
         strip_short = env.config.getboolean("ml_instructions", "strip_short")
         strip_multispaces = env.config.getboolean("ml_instructions", "strip_multispaces")
         strip_punctuation = env.config.getboolean("ml_instructions", "strip_punctuation")
+        strip_stop_phrases = env.config.getboolean("ml_instructions", "strip_stop_phrases")
         split_alphanum = env.config.getboolean("ml_instructions", "split_alphanum")
+        convert_to_lower = env.config.getboolean("ml_instructions", "convert_to_lower")
+
+        if strip_stop_phrases == True:
+            stop_phrase_path = env.config["job_instructions"]["stop_phrases"]
+            stop_phrase_string = env.read_file(stop_phrase_path)
+            stop_phrases = stop_phrase_string.split("\n")
+
 
         log.getLogger().info("Shape of DF: " + str(df.shape))
 
@@ -32,8 +40,11 @@ class TextCleaner_Df_Corpus:
                 sentences = self._split_to_sentences(document)
                 key = "clean_" + text_field + row["id"]
                 for sentence in sentences:
-                    clean_sentence = text_parsing_utils.gensim_clean_string(sentence,strip_tags,split_alphanum,strip_nonalphanumeric,strip_multispaces,strip_short,3,strip_punctuation)
-
+                    clean_sentence = text_parsing_utils.gensim_clean_string(sentence,strip_tags,split_alphanum,strip_nonalphanumeric,strip_multispaces,strip_short,3,strip_punctuation, convert_to_lower)
+                    if strip_stop_phrases:
+                        clean_sentence = text_parsing_utils.strip_stop_phrases(clean_sentence, stop_phrases)
+                        if len(clean_sentence) <= 2:
+                            continue
                     colutils._get_list_from_dict(clean_text_dict,key).append(clean_sentence)
                 df.at[index, text_field] = colutils._list_to_string(colutils._get_list_from_dict(clean_text_dict,key))
         as_analysis = env.config.getboolean("ml_instructions", "put_cleaned_text_in_analysis_dict")

@@ -116,7 +116,7 @@ def scrolled_search(es, index_name, limit):
     # Start scrolling
     log.getLogger().info("scrolling")
     while (scroll_size > 0):
-        total = total + scroll_size
+        total = total + 1000
         if total > limit:
             break
         page = es.scroll(scroll_id=sid, scroll='2m')
@@ -126,7 +126,7 @@ def scrolled_search(es, index_name, limit):
         scroll_size = len(page['hits']['hits'])
         #print ("scroll size: " + str(scroll_size))
         page_list.append(page)
-        log.getLogger().info("still scrolling")
+        log.getLogger().info("still scrolling "+ str(total))
     return page_list
 
 

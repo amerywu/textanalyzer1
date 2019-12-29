@@ -54,6 +54,7 @@ class PipelineManifest:
         "TextRank": tools.text_pipeline.text_rank.TextRank(),
         "LinkedDocCorpusWordCount": tools.text_pipeline.word_count.LinkedDocCorpusWordCount(),
         "LinkedDocCorpusStopWordGenerator" : tools.text_pipeline.word_count.LinkedDocCorpusStopWordGenerator(),
+        "TextRankResultsToLinkedDocList" : tools.text_pipeline.text_rank.TextRankResultsToLinkedDocList(),
 
 
     }

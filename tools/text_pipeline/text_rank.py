@@ -127,3 +127,25 @@ class TextRank:
             return []
 
         return scores
+
+class TextRankResultsToLinkedDocList:
+
+    def __init__(self):
+        pass
+
+    def perform(self, package: merm_model.PipelinePackage):
+        linked_doc_dict = {}
+        package.cache_linked_docs()
+        text_rank_all_groups = package.any_analysis_dict["text_rank_all_groups"]
+        for key, item_dict in text_rank_all_groups.items():
+            linked_doc_list = []
+            for rank, item_list in item_dict.items():
+                for sentence in item_list:
+                    linked_doc = package.dependencies_dict["utils"].sentence_to_linked_doc(sentence)
+                    linked_doc_list.append(linked_doc)
+                linked_doc_dict[key + "_" +str(rank)] = linked_doc_list
+        package.linked_document_list = linked_doc_dict
+        return package
+
+
+

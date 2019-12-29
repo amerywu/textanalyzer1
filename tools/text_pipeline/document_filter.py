@@ -15,6 +15,9 @@ class GroupByESIndex:
         pass
 
     def perform(self, package: merm_model.PipelinePackage):
+        thetype = type(package.linked_document_list)
+        if thetype  is dict:
+            return package
 
         linked_doc_by_index = {}
         group_testenv = package.dependencies_dict["env"].config.getboolean("pipeline_instructions","group_testenv")
@@ -68,17 +71,43 @@ class StopWordRemoval:
 
     def perform(self, package: merm_model.PipelinePackage):
 
+
         log.getLogger().info("StopWordRemoval (If stop word list present in package.any_analysis)")
+        stop_words = []
         if self.stop_words_key in package.any_analysis_dict:
             log.getLogger().debug("got stop words")
 
             log.getLogger().debug("It's a list")
             stop_words = package.any_analysis_dict[self.stop_words_key]
-            for linked_doc in package.linked_document_list:
-                new_tokens = []
-                for word in linked_doc.tokens:
-                    if not word in stop_words:
-                        # log.getLogger().debug("removing " + word)
-                        new_tokens.append(word)
-                linked_doc.tokens = new_tokens
+
+        else:
+
+            stop_list_path = package.dependencies_dict["env"].config["job_instructions"]["stop_list"]
+            stop_list_string = package.dependencies_dict["env"].read_file(stop_list_path)
+
+            if self._charFrequency(stop_list_string, ",") > 5:
+                stop_words = stop_list_string.split(",")
+            else:
+                stop_words = stop_list_string.split("\n")
+
+        for linked_doc in package.linked_document_list:
+            new_tokens = []
+            for word in linked_doc.tokens:
+                if not word in stop_words:
+                    # log.getLogger().debug("removing " + word)
+                    new_tokens.append(word)
+            linked_doc.tokens = new_tokens
+
         return package
+
+    def _charFrequency(self, text, char):
+        all_freq = {}
+        for i in text:
+            if i in all_freq:
+                all_freq[i] += 1
+            else:
+                all_freq[i] = 1
+        if char in all_freq.keys():
+            return all_freq[char]
+        else:
+            return 0
