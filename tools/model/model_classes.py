@@ -130,6 +130,7 @@ class PipelinePackage:
         self.dependencies_dict = dependencies_dict
         self.cache_dict = {}
 
+
         analysis_type = _typeOrNone(self.any_analysis_dict)
         if analysis_type == "None":
             self.any_analysis_dict = None
@@ -158,7 +159,11 @@ class PipelinePackage:
             self.cache_dict["linked_docs"] = cached_linked_docs
             self.linked_document_list = []
 
+    def log_stage(self, log):
+        self.any_analysis_dict["stage_log"] = log
 
+    def stage_log(self):
+        return self.any_analysis_dict["stage_log"]
 
     def default_analysis_key(self):
         return "default_analysis_key"

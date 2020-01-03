@@ -25,6 +25,7 @@ class TextRankGrouped_SubPipe:
         analysis_by_group_text_rank = {}
         analysis_by_group_noun_phrase = {}
         minimum_doc_count = package.dependencies_dict["env"].config.getint('ml_instructions', 'minimum_doc_count')
+        log_string = "\n======================\nSubset Analysis for text rank, rake and noun phrase.\n"
         for sub_corpus_name_untyped , doc_list in grouped_linked_docs.items():
             sub_corpus_name = str(sub_corpus_name_untyped)
             if len(doc_list) > minimum_doc_count:
@@ -43,6 +44,7 @@ class TextRankGrouped_SubPipe:
                 analysis_by_group_text_rank[sub_corpus_name + "_lemmatized"] = package_one_group.any_analysis_dict["text_rank_1"]
                 analysis_by_group_rake[sub_corpus_name + "_lemmatized"] = package_one_group.any_analysis_dict["rake_1"]
                 analysis_by_group_noun_phrase[sub_corpus_name + "_lemmatized"] = package_one_group.any_analysis_dict["noun_phrase_1"]
+                log_string = log_string + package_one_group.stage_log()
         package.any_analysis_dict["text_rank_all_groups"] = analysis_by_group_text_rank
         package.any_analysis_dict["rake_all_groups"] = analysis_by_group_rake
         package.any_analysis_dict["noun_phrase_all_groups"] = analysis_by_group_noun_phrase
@@ -53,6 +55,8 @@ class TextRankGrouped_SubPipe:
                                                  package.any_analysis_dict,
                                                  package.any_inputs_dict,
                                                  package.dependencies_dict)
+
+        new_package.log_stage(log_string)
         return new_package
 
 
@@ -65,31 +69,42 @@ class TextRankGrouped_SubPipe:
 
         log.getLogger().info("Subset: " + str(sub_corpus_name))
         log.getLogger().info(":TextRank: ")
+        log_string = "\n++++++++++++++++++++++++++++++\nSubset: " + str(sub_corpus_name)
         package_one_group = manifest["TextRank"].perform(package_one_group)
-
+        log_string = log_string + "\n\n" + package_one_group.stage_log()
         log.getLogger().info(":LinkedDocCorpusStopWordGenerator: ")
         package_one_group = manifest["LinkedDocCorpusStopWordGenerator"].perform(package_one_group)
+        log_string = log_string + "\n\n" + package_one_group.stage_log()
 
         log.getLogger().info(":RakeAnalysisFromTextRank: ")
         package_one_group = manifest["RakeAnalysisFromTextRank"].perform(package_one_group)
+        log_string = log_string + "\n\n" + package_one_group.stage_log()
 
         log.getLogger().info(":PartOfSpeechAnalyzerFromTextRank: ")
         package_one_group = manifest["PartOfSpeechAnalyzerFromTextRank"].perform(package_one_group)
+        log_string = log_string + "\n\n" + package_one_group.stage_log()
 
         log.getLogger().info(":Lemmatize_Corpus_LinkedDocs: ")
         package_one_group = manifest["Lemmatize_Corpus_LinkedDocs"].perform(package_one_group)
+        log_string = log_string + "\n\n" + package_one_group.stage_log()
 
         log.getLogger().info(":TextRank: ")
         package_one_group = manifest["TextRank"].perform(package_one_group)
+        log_string = log_string + "\n\n" + package_one_group.stage_log()
 
         log.getLogger().info(":LinkedDocCorpusStopWordGenerator: ")
         package_one_group = manifest["LinkedDocCorpusStopWordGenerator"].perform(package_one_group)
+        log_string = log_string + "\n\n" + package_one_group.stage_log()
 
         log.getLogger().info(":RakeAnalysisFromTextRank: ")
         package_one_group = manifest["RakeAnalysisFromTextRank"].perform(package_one_group)
+        log_string = log_string + "\n\n" + package_one_group.stage_log()
 
         log.getLogger().info(":PartOfSpeechAnalyzerFromTextRank: ")
         package_one_group = manifest["PartOfSpeechAnalyzerFromTextRank"].perform(package_one_group)
+        log_string = log_string + "\n\n" + package_one_group.stage_log()
+        package_one_group.log_stage(log_string)
+
 
         return package_one_group
 

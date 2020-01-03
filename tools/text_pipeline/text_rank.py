@@ -33,6 +33,8 @@ class TextRank:
             count = count + 1
         analysis_key = colutils.incrementing_key("text_rank",package.any_analysis_dict)
         package.any_analysis_dict[analysis_key] = rank_by_dict
+        package.log_stage("Conducting text rank. Total document count is " + str(len(package.linked_document_list)) + \
+                          ". For each document the top " + str(len(list(rank_by_dict.keys()))) + " ranked sentences were captured.")
         return package
 
     def _prep_rank_by_doc_dict(self, package):

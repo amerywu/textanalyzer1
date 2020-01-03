@@ -12,6 +12,7 @@ def generate_linked_docs_ranked(package: merm_model.PipelinePackage, analysis_ke
                 linked_doc_list.append(linked_doc)
             linked_doc_dict[key + "_" + str(rank)] = linked_doc_list
     package.linked_document_list = linked_doc_dict
+
     return package
 
 def generate_linked_docs_unranked(package: merm_model.PipelinePackage, analysis_key):
@@ -34,6 +35,7 @@ class TextRankResultsToLinkedDocList:
         pass
 
     def perform(self, package: merm_model.PipelinePackage):
+        package.log_stage("Converted all text rank results into corpus documents. This is usually done to prepare the documents for an LDA analysis")
         return generate_linked_docs_ranked(package, "text_rank_all_groups")
 
 
@@ -43,6 +45,8 @@ class RakeResultsToLinkedDocList:
         pass
 
     def perform(self, package: merm_model.PipelinePackage):
+        package.log_stage(
+            "Converted all rake results into corpus documents. This is usually done to prepare the documents for an LDA analysis")
         return generate_linked_docs_ranked(package, "rake_all_groups")
 
 class NounPhraseResultsToLinkedDocList:
@@ -51,5 +55,7 @@ class NounPhraseResultsToLinkedDocList:
         pass
 
     def perform(self, package: merm_model.PipelinePackage):
+        package.log_stage(
+            "Converted all noun phrase results into corpus documents. This is usually done to prepare the documents for an LDA analysis")
         return generate_linked_docs_ranked(package, "noun_phrase_all_groups")
 

@@ -23,6 +23,7 @@ class PartOfSpeechAnalyzerFromTextRank:
 
 
         package.any_analysis_dict[analysis_key] = all_ranks_results_dict
+        package.log_stage("Used spacy nlp to generate noun phrases from the text rank results")
         return package
 
     def _reset_np(self, np_text, noun_phrases):

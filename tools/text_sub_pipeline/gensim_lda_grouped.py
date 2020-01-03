@@ -39,7 +39,7 @@ class GensimLdaGrouped_SubPipe:
             log.getLogger().info("STRUCTURE after GroupByESIndex:"  + grouped_doc_package.structure())
         else:
             log.getLogger().warning("The return type is not of type PipelinePackage. THIS IS BAD PRACTICE :(")
-
+        log_string = "\n\n_______________________\nPerforming LDA on subsets\n"
         grouped_linked_docs = grouped_doc_package.linked_document_list
 
         lda_models_by_group = {}
@@ -69,6 +69,7 @@ class GensimLdaGrouped_SubPipe:
                                      dict_for_group_processing,
                                      str(sub_corpus_name),
                                      mfst)
+                log_string = log_string + package_one_group.stage_log()
 
         self._set_analysis(package, lda_analysis_by_group)
         self._set_model(package, lda_models_by_group)
@@ -77,6 +78,7 @@ class GensimLdaGrouped_SubPipe:
                                                  lda_dict_by_group,package.linked_document_list,
                                                  package.any_analysis_dict, package.any_inputs_dict,
                                                  package.dependencies_dict)
+        new_package.log_stage(log_string)
         return new_package
 
 
@@ -88,10 +90,13 @@ class GensimLdaGrouped_SubPipe:
                         sub_corpus_name,
                         manifest):
 
-
+        log_string = "\n\n-----------\nSubset:  " + sub_corpus_name +"\n"
         package_one_group = manifest["StopWordRemoval"].perform(package_one_group)
+        log_string = log_string + package_one_group.stage_log()
         package_one_group = manifest["ListOfListsToGensimCorpora"].perform(package_one_group)
+        log_string = log_string + package_one_group.stage_log()
         package_one_group = manifest["GensimLDA"].perform(package_one_group)
+        log_string = log_string + package_one_group.stage_log()
 
         dict_for_group_processing["lda_models_by_group"][sub_corpus_name] = package_one_group.model
         dict_for_group_processing["lda_corpus_by_group"][sub_corpus_name] = package_one_group.corpus
@@ -108,6 +113,7 @@ class GensimLdaGrouped_SubPipe:
                                                      dict_for_group_processing,
                                                      sub_corpus_name,
                                                      manifest)
+        package_one_group.log_stage(log_string + package_one_group.stage_log())
         return package_one_group
 
 

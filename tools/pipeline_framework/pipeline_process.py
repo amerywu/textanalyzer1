@@ -8,7 +8,7 @@ class PipelineFactory:
 
     def next_step(self, task:str, package:merm_model.PipelinePackage):
 
-        self.step_count = self.step_count +1
+        self.step_count = self.step_count + 1
         msg = "\n\nEntering " + task + " " + str(self.step_count) + "\n\n"
         log.getLogger().info(msg)
         manifest = factory.PipelineManifest
@@ -21,3 +21,4 @@ class PipelineFactory:
         else:
             log.getLogger().warning("The return type is not of type PipelinePackage. THIS IS BAD PRACTICE :(")
         return result
+

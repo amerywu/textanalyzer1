@@ -50,6 +50,8 @@ class LinkedDocCorpusStopWordGenerator:
         analysis_key = colutils.incrementing_key("stop_words", package.any_analysis_dict)
         package.any_analysis_dict[analysis_key] = stop_words
         self.save_to_file(stop_words,package)
+        package.log_stage("Generated stop words. \nGlobal stop word count: " + str(len(stop_words_global)) + "\nHigh frequency dynamically generated stop words: " + \
+                          str(len(stop_words_top)) + "\nLow frequency dynamically generated stop words: " + str(len(stop_words_bottom)))
         return package
 
     def save_to_file(self, stop_words_new, package):

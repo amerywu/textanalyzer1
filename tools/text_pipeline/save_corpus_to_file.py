@@ -10,6 +10,7 @@ class SaveDfAsCsv:
     def perform(self,package:merm_model.PipelinePackage):
         package.corpus.to_csv(env.config['job_instructions']['es_file_location'],index=False)
         log.getLogger().info("Saved ElasticSearch Data as CSV at: "+env.config['job_instructions']['es_file_location'])
+        package.log_stage("Saved ElasticSearch Data as CSV at: "+env.config['job_instructions']['es_file_location'])
         return package
 
 

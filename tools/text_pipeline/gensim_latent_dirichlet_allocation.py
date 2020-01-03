@@ -44,11 +44,14 @@ class GensimLDA:
 
             package.any_analysis_dict[lda_analysis_key(package)] = topic_dict
             new_package = merm_model.PipelinePackage(lda_model,package.corpus,package.dict,package.linked_document_list,package.any_analysis_dict, package.any_inputs_dict, package.dependencies_dict)
+            new_package.log_stage("Performed Gensim LDA.\nTopic Count: " + str(topic_count) + "\nIterations: " + str(100) + \
+                                  "\nalpha = 0 \nUpdate Every: 1\n per_word_topics: False\nReporting on top " + str(report_word_count) + "words in each topic\n")
             return new_package
         else:
             new_package = merm_model.PipelinePackage(None, package.corpus, package.dict,
                                                        package.linked_document_list, [], package.any_inputs_dict,
                                                      package.dependencies_dict)
+            new_package.log_stage("Gensim LDA aborted. There were too few tokens")
             return new_package
 
 

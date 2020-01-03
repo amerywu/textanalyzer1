@@ -84,6 +84,8 @@ class RakeAnalysisFromTextRank:
             keywords_by_document_dict[idx] = resulting_keywords
         analysis_key = colutils.incrementing_key("rake", package.any_analysis_dict)
         package.any_analysis_dict[analysis_key] = keywords_by_document_dict
+
+        package.log_stage("Performed rake analysis on the text rank results. The stop word list was from " + stop_words_path)
         return package
 
     def _rake_analysis(self, document, stop_words):

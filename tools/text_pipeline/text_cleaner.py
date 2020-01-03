@@ -50,6 +50,18 @@ class TextCleaner_Df_Corpus:
         as_analysis = env.config.getboolean("ml_instructions", "put_cleaned_text_in_analysis_dict")
         if as_analysis == True:
             package.any_analysis_dict["cleaned_text"] = clean_text_dict
+
+
+
+        package.log_stage("Text Cleaning: " + \
+        "strip_nonalphanumeric = " + str(strip_nonalphanumeric) + \
+        " strip_tags = " + str(strip_tags) + \
+        " strip_short = " + str(strip_short) + \
+        " strip_multispaces = " + str(strip_multispaces) + \
+        " strip_punctuation = " + str(strip_punctuation) + \
+        " strip_stop_phrases = " + str(strip_stop_phrases) + \
+        " split_alphanum = " + str(split_alphanum) + \
+        " convert_to_lower = " + str(convert_to_lower) )
         return package
 
 
@@ -83,7 +95,7 @@ class Lemmatize_Corpus_LinkedDocs:
                 doc_string_lemmatized = doc_string_lemmatized + sentence_string_lemmatized
             linked_doc.raw = doc_string_lemmatized
 
-
+        package.log_stage("Lemmatized the corpus.")
         return package
 
 

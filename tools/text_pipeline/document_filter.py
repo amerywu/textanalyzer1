@@ -31,6 +31,8 @@ class GroupByESIndex:
 
         new_package = merm_model.PipelinePackage(package.model, package.corpus, package.dict, linked_doc_by_index,
                                                  package.any_analysis, package.any_inputs_dict, package.dependencies_dict)
+
+        new_package.log_stage("Divided the entire corpus into groups. The groups created are " + str(linked_doc_by_index.keys()))
         return new_package
 
 
@@ -74,10 +76,12 @@ class StopWordRemoval:
 
         log.getLogger().info("StopWordRemoval")
         stop_words = []
+        load_source = ""
         if self.stop_words_key in package.any_analysis_dict:
             log.getLogger().info("Stop words retrieved from package analyses.")
             log.getLogger().debug("It's a list")
             stop_words = package.any_analysis_dict[self.stop_words_key]
+            load_source = " from previous pipeline process."
 
         else:
 
@@ -91,6 +95,7 @@ class StopWordRemoval:
             else:
                 log.getLogger().info("\\n delineated")
                 stop_words = stop_list_string.split("\n")
+            load_source = "from " + stop_list_path
 
         for linked_doc in package.linked_document_list:
             new_tokens = []
@@ -100,6 +105,7 @@ class StopWordRemoval:
                     new_tokens.append(word)
             linked_doc.tokens = new_tokens
 
+        package.log_stage("Removed all stop words from the corpus tokens (i.e., bag of words). The stop words were loaded " + load_source)
         return package
 
 

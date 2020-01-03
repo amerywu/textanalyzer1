@@ -32,7 +32,7 @@ class ListOfListsToGensimCorpora:
                  res = dictionary.get(word)
                  res
         log.getLogger().info("Feature count: " + str(len(dictionary.id2token)))
-
+        package.log_stage("Converted the corpus into a Gensim dictionary (i.e., bag of words)")
         return data_models.PipelinePackage(None, corpus, dictionary, linked_doc_list, package.any_analysis_dict, package.any_inputs_dict, package.dependencies_dict)
 
 
@@ -51,6 +51,7 @@ class DataframeToListOfLists:
         tokenized_linked_docs = package.dependencies_dict["utils"].tokenize(corpora_list)
         #merm_tools_linkeddocument_list =package.dependencies_dict["utils"].lemmatize_tokens(token_list, package.dependencies_dict["utils"].standard_stop_words())
         package = data_models.PipelinePackage(None, None, None, tokenized_linked_docs, package.any_analysis_dict, package.any_inputs_dict, package.dependencies_dict)
+        package.log_stage("Converted a pandas dataframe into our own document list format. \nDocument count is " + str(len(tokenized_linked_docs)))
         return package
 
     def _dfToList(self, package:data_models.PipelinePackage):

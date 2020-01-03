@@ -105,9 +105,11 @@ def pick_pipeline():
 
 def run_pipeline(package:merm_model.PipelinePackage):
     log.getLogger().warning("------- STARTING PIPELINE -------")
+    env = package.dependencies_dict["env"]
+    report_dir = env.config["job_instructions"]["output_folder"]
 
 
-
+    log_string = ""
     #create factory
     factory = package.dependencies_dict["pipe_process"].PipelineFactory()
 
@@ -123,10 +125,11 @@ def run_pipeline(package:merm_model.PipelinePackage):
     for step_tuple in pipeline_steps:
         if env.continue_run() == True:
             package = factory.next_step(step_tuple[1], package)
+            log_string = log_string + "\n\n" + package.stage_log()
         else:
             log.getLogger().warning("Continue run is FALSE")
 
-
+    env.overwrite_file(report_dir + "/" + "PipelineReport.txt", log_string)
     log.getLogger().info("------- PIPELINE COMPLETED -------")
 
     # Post pipeline; This is where the data is no longer changing. Rather, the data is ready

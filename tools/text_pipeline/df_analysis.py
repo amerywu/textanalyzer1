@@ -26,6 +26,7 @@ class DfGroupByAnalysis:
                 groupby_dict[jobs_string] = groupby_dict[jobs_string] + 1
             else:
                 groupby_dict[jobs_string] = 1
+        package.log_stage("Broke a pandas data frame into a dict of data grouped by " + str(column))
         package.any_analysis_dict["group_by_"+column] = groupby_dict
 
         return package
