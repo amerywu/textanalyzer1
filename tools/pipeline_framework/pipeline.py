@@ -1,4 +1,4 @@
-import tools.post_pipeline.post_process_factory as post_process
+import tools.pipeline_framework.post_process_factory as post_process
 import tools.model.model_classes as merm_model
 
 import tools.utils.envutils as env
@@ -46,6 +46,11 @@ _text_rank = [
     (40, "GensimLdaGrouped_SubPipe"),
     (50, "TextRankResultsToLinkedDocList"),
     (60, "GensimLdaGrouped_SubPipe")  ,
+    (63, "RakeResultsToLinkedDocList"),
+    (65, "GensimLdaGrouped_SubPipe"),
+    (67, "NounPhraseResultsToLinkedDocList"),
+    (70, "GensimLdaGrouped_SubPipe"),
+
 
 
 ]

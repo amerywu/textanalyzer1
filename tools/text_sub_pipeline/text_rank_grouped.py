@@ -23,11 +23,11 @@ class TextRankGrouped_SubPipe:
         grouped_linked_docs = grouped_doc_package.linked_document_list
         analysis_by_group_rake = {}
         analysis_by_group_text_rank = {}
+        analysis_by_group_noun_phrase = {}
         minimum_doc_count = package.dependencies_dict["env"].config.getint('ml_instructions', 'minimum_doc_count')
         for sub_corpus_name_untyped , doc_list in grouped_linked_docs.items():
             sub_corpus_name = str(sub_corpus_name_untyped)
             if len(doc_list) > minimum_doc_count:
-
                 package_one_group = merm_model.PipelinePackage(package.model,
                                                                package.corpus,
                                                                package.dict,
@@ -39,11 +39,13 @@ class TextRankGrouped_SubPipe:
                 package_one_group = self._analyze_subset(package_one_group,sub_corpus_name,mfst,doc_list)
                 analysis_by_group_text_rank[sub_corpus_name] = package_one_group.any_analysis_dict["text_rank_0"]
                 analysis_by_group_rake[sub_corpus_name] = package_one_group.any_analysis_dict["rake_0"]
+                analysis_by_group_noun_phrase[sub_corpus_name] = package_one_group.any_analysis_dict["noun_phrase_0"]
                 analysis_by_group_text_rank[sub_corpus_name + "_lemmatized"] = package_one_group.any_analysis_dict["text_rank_1"]
                 analysis_by_group_rake[sub_corpus_name + "_lemmatized"] = package_one_group.any_analysis_dict["rake_1"]
+                analysis_by_group_noun_phrase[sub_corpus_name + "_lemmatized"] = package_one_group.any_analysis_dict["noun_phrase_1"]
         package.any_analysis_dict["text_rank_all_groups"] = analysis_by_group_text_rank
         package.any_analysis_dict["rake_all_groups"] = analysis_by_group_rake
-
+        package.any_analysis_dict["noun_phrase_all_groups"] = analysis_by_group_noun_phrase
         new_package = merm_model.PipelinePackage(package.model,
                                                  package.corpus,
                                                  package.dict,
@@ -71,6 +73,8 @@ class TextRankGrouped_SubPipe:
         log.getLogger().info(":RakeAnalysisFromTextRank: ")
         package_one_group = manifest["RakeAnalysisFromTextRank"].perform(package_one_group)
 
+        log.getLogger().info(":PartOfSpeechAnalyzerFromTextRank: ")
+        package_one_group = manifest["PartOfSpeechAnalyzerFromTextRank"].perform(package_one_group)
 
         log.getLogger().info(":Lemmatize_Corpus_LinkedDocs: ")
         package_one_group = manifest["Lemmatize_Corpus_LinkedDocs"].perform(package_one_group)
@@ -78,8 +82,15 @@ class TextRankGrouped_SubPipe:
         log.getLogger().info(":TextRank: ")
         package_one_group = manifest["TextRank"].perform(package_one_group)
 
+        log.getLogger().info(":LinkedDocCorpusStopWordGenerator: ")
+        package_one_group = manifest["LinkedDocCorpusStopWordGenerator"].perform(package_one_group)
+
         log.getLogger().info(":RakeAnalysisFromTextRank: ")
         package_one_group = manifest["RakeAnalysisFromTextRank"].perform(package_one_group)
+
+        log.getLogger().info(":PartOfSpeechAnalyzerFromTextRank: ")
+        package_one_group = manifest["PartOfSpeechAnalyzerFromTextRank"].perform(package_one_group)
+
         return package_one_group
 
 

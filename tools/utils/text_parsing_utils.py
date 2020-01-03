@@ -144,6 +144,32 @@ def gensim_clean_string(textIn, _strip_tags=True, _split_alphanumeric=True, _str
 
     return cleaner
 
+
+def _stop_word_list_generator(package:merm_model.PipelinePackage):
+    stop_list_path = package.dependencies_dict["env"].config["job_instructions"]["stop_list"]
+    stop_list_string = package.dependencies_dict["env"].read_file(stop_list_path)
+    log.getLogger().info("Stop words from file system")
+
+    if _charFrequency(stop_list_string, ",") > 5:
+        log.getLogger().info("comma delineated")
+        stop_words = stop_list_string.split(",")
+    else:
+        log.getLogger().info("\\n delineated")
+        stop_words = stop_list_string.split("\n")
+    return stop_words
+
+def _charFrequency( text, char):
+    all_freq = {}
+    for i in text:
+        if i in all_freq:
+            all_freq[i] += 1
+        else:
+            all_freq[i] = 1
+    if char in all_freq.keys():
+        return all_freq[char]
+    else:
+        return 0
+
 def strip_stop_phrases(sentence, phrases):
 
     for phrase in phrases:

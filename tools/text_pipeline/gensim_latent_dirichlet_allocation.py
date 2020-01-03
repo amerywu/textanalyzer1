@@ -7,11 +7,14 @@ import gensim
 import csv
 import pandas as pd
 
+
+def lda_analysis_key( package: merm_model.PipelinePackage):
+    return "Gensim_LDA_" + package.any_inputs_dict["previous_task"]
+
 class GensimLDA:
 
     def __init__(self):
         pass
-
 
     def perform(self, package:merm_model.PipelinePackage):
         #scipy_csc_matrix = gensim.matutils.corpus2csc(package.corpus)
@@ -21,9 +24,6 @@ class GensimLDA:
         report_word_count = env.config.getint('ml_instructions', 'gensim_lda_term_per_topic_reporting_count')
         if len(package.dict.token2id) > 50:
             topic_dict = {}
-
-
-
             lda_model = gensim.models.ldamodel.LdaModel(corpus=package.corpus,
                                                         id2word=package.dict,
                                                         num_topics=topic_count,
@@ -42,7 +42,7 @@ class GensimLDA:
                     words_for_topic.append((w[0],w[1]))
                 topic_dict[index] = words_for_topic
 
-            package.any_analysis_dict[package.default_analysis_key()] = topic_dict
+            package.any_analysis_dict[lda_analysis_key(package)] = topic_dict
             new_package = merm_model.PipelinePackage(lda_model,package.corpus,package.dict,package.linked_document_list,package.any_analysis_dict, package.any_inputs_dict, package.dependencies_dict)
             return new_package
         else:
@@ -175,8 +175,6 @@ class GensimTopicReduction:
         return topics_as_terms_by_idx
 
     def _prepare_reduced_topics(self, reduced_topics):
-
-
         prepared_reduced_topics_dict = {}
         for row_dict in reduced_topics:
             new_key = row_dict["index_name"] + "_" + str(row_dict["topic_id"])
@@ -188,10 +186,6 @@ class GensimTopicReduction:
                 prepared_reduced_topics_dict[new_key] = term_list
                 prepared_reduced_topics_dict[new_key].append(row_dict["term"])
         return prepared_reduced_topics_dict
-
-
-
-
 
     def _iterate_similar_topics(self, prepared_data, prepared_reduced_topics):
         similarity_threshold = env.config.getint('ml_instructions', 'gensim_lda_topic_similarity_threshold')

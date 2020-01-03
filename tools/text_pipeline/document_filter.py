@@ -72,11 +72,10 @@ class StopWordRemoval:
     def perform(self, package: merm_model.PipelinePackage):
 
 
-        log.getLogger().info("StopWordRemoval (If stop word list present in package.any_analysis)")
+        log.getLogger().info("StopWordRemoval")
         stop_words = []
         if self.stop_words_key in package.any_analysis_dict:
-            log.getLogger().debug("got stop words")
-
+            log.getLogger().info("Stop words retrieved from package analyses.")
             log.getLogger().debug("It's a list")
             stop_words = package.any_analysis_dict[self.stop_words_key]
 
@@ -84,10 +83,13 @@ class StopWordRemoval:
 
             stop_list_path = package.dependencies_dict["env"].config["job_instructions"]["stop_list"]
             stop_list_string = package.dependencies_dict["env"].read_file(stop_list_path)
+            log.getLogger().info("Stop words from file system")
 
-            if self._charFrequency(stop_list_string, ",") > 5:
+            if package.dependencies_dict["utils"]._charFrequency(stop_list_string, ",") > 5:
+                log.getLogger().info("comma delineated")
                 stop_words = stop_list_string.split(",")
             else:
+                log.getLogger().info("\\n delineated")
                 stop_words = stop_list_string.split("\n")
 
         for linked_doc in package.linked_document_list:
@@ -100,14 +102,4 @@ class StopWordRemoval:
 
         return package
 
-    def _charFrequency(self, text, char):
-        all_freq = {}
-        for i in text:
-            if i in all_freq:
-                all_freq[i] += 1
-            else:
-                all_freq[i] = 1
-        if char in all_freq.keys():
-            return all_freq[char]
-        else:
-            return 0
+

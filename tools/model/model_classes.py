@@ -135,6 +135,10 @@ class PipelinePackage:
             self.any_analysis_dict = None
         if "{" not in  analysis_type:
             self.any_analysis_dict = { self.default_analysis_key() : any_analysis_dict}
+        if type(self.any_inputs_dict) is None:
+            self.any_inputs_dict = {}
+        if "history" not in self.any_inputs_dict.keys():
+            self.any_inputs_dict["history"] = []
 
 
     def cache_linked_docs(self):

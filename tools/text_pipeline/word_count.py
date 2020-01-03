@@ -43,9 +43,10 @@ class LinkedDocCorpusStopWordGenerator:
 
 
         package.any_analysis_dict["corpus_word_count"] = corpus_word_count
+        stop_words_global = package.dependencies_dict["utils"]._stop_word_list_generator(package)
         stop_words_top = self._top_threshold(package)
         stop_words_bottom = self._bottom_threshold(package)
-        stop_words = stop_words_bottom + stop_words_top
+        stop_words = stop_words_bottom + stop_words_top +  stop_words_global
         analysis_key = colutils.incrementing_key("stop_words", package.any_analysis_dict)
         package.any_analysis_dict[analysis_key] = stop_words
         self.save_to_file(stop_words,package)

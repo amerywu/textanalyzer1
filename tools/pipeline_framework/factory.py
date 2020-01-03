@@ -10,12 +10,16 @@ from tools.text_pipeline import topic_comparator
 from tools.text_pipeline import save_corpus_to_file
 from tools.text_pipeline import job_df_analysis
 from tools.text_pipeline import df_analysis
-from tools.text_sub_pipeline import gensim_lda_grouped
+
 from  tools.text_pipeline import rake_analysis
 from tools.text_pipeline import text_cleaner
 from tools.text_pipeline import text_rank
 from tools.text_pipeline import  word_count
+from tools.text_pipeline import part_of_speech_analyzer
+from tools.text_pipeline import analysis_to_linkeddocs_conversion
+
 from tools.text_sub_pipeline import text_rank_grouped
+from tools.text_sub_pipeline import gensim_lda_grouped
 
 
 
@@ -54,7 +58,10 @@ class PipelineManifest:
         "TextRank": tools.text_pipeline.text_rank.TextRank(),
         "LinkedDocCorpusWordCount": tools.text_pipeline.word_count.LinkedDocCorpusWordCount(),
         "LinkedDocCorpusStopWordGenerator" : tools.text_pipeline.word_count.LinkedDocCorpusStopWordGenerator(),
-        "TextRankResultsToLinkedDocList" : tools.text_pipeline.text_rank.TextRankResultsToLinkedDocList(),
+        "TextRankResultsToLinkedDocList" : tools.text_pipeline.analysis_to_linkeddocs_conversion.TextRankResultsToLinkedDocList(),
+        "RakeResultsToLinkedDocList" : tools.text_pipeline.analysis_to_linkeddocs_conversion.RakeResultsToLinkedDocList(),
+        "NounPhraseResultsToLinkedDocList": tools.text_pipeline.analysis_to_linkeddocs_conversion.NounPhraseResultsToLinkedDocList(),
+        "PartOfSpeechAnalyzerFromTextRank" : tools.text_pipeline.part_of_speech_analyzer.PartOfSpeechAnalyzerFromTextRank(),
 
 
     }
