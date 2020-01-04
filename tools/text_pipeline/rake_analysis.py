@@ -70,10 +70,6 @@ class RakeAnalysisFromTextRank:
         keywords_by_document_dict = {}
         stop_words_path = package.dependencies_dict["env"].config["job_instructions"]["stop_list"]
         colutils = package.dependencies_dict["colutils"]
-        stopwords_key = colutils.get_top_incrementing_key("stop_words", package.any_analysis_dict)
-        #if stopwords_key in package.any_analysis_dict.keys():
-            #stop_words = stop_words + package.any_analysis_dict[stopwords_key]
-
 
         analysis_key = colutils.get_top_incrementing_key("text_rank", package.any_analysis_dict)
         text_dict = package.any_analysis_dict[analysis_key]
@@ -92,7 +88,3 @@ class RakeAnalysisFromTextRank:
         rake_object = rake.Rake(stop_words)
         keywords = rake_object.run(document)
         return keywords
-
-
-
-

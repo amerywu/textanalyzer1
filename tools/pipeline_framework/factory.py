@@ -17,7 +17,7 @@ from tools.text_pipeline import text_rank
 from tools.text_pipeline import  word_count
 from tools.text_pipeline import part_of_speech_analyzer
 from tools.text_pipeline import analysis_to_linkeddocs_conversion
-
+from tools.text_pipeline import gensim_sentence_finder
 from tools.text_sub_pipeline import text_rank_grouped
 from tools.text_sub_pipeline import gensim_lda_grouped
 
@@ -62,6 +62,5 @@ class PipelineManifest:
         "RakeResultsToLinkedDocList" : tools.text_pipeline.analysis_to_linkeddocs_conversion.RakeResultsToLinkedDocList(),
         "NounPhraseResultsToLinkedDocList": tools.text_pipeline.analysis_to_linkeddocs_conversion.NounPhraseResultsToLinkedDocList(),
         "PartOfSpeechAnalyzerFromTextRank" : tools.text_pipeline.part_of_speech_analyzer.PartOfSpeechAnalyzerFromTextRank(),
-
-
+        "GensimSentenceFinder": tools.text_pipeline.gensim_sentence_finder.GensimSentenceFinder(),
     }

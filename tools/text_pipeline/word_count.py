@@ -1,15 +1,16 @@
 import tools.model.model_classes as merm_model
 import tools.utils.log as log
 import tools.utils.envutils as env
+import statistics as stats
 
 class LinkedDocCorpusWordCount:
 
     def __init__(self):
         pass
 
-    def perform(self,package:merm_model.PipelinePackage):
+    def count_as_doc_list(self, linked_document_list):
         corpus_word_count = {}
-        for linked_doc in package.linked_document_list:
+        for linked_doc in linked_document_list:
             doc_word_count = {}
             for token in linked_doc.tokens:
                 if token in doc_word_count.keys():
@@ -23,8 +24,50 @@ class LinkedDocCorpusWordCount:
                     corpus_word_count[key] = corpus_word_count[key] + doc_word_count[key]
                 else:
                     corpus_word_count[key] = doc_word_count[key]
-        package.any_analysis_dict["corpus_word_count"] = corpus_word_count
+        return corpus_word_count
 
+    def count_as_doc_dict(self, linked_document_dict):
+        corpus_word_count = {}
+        for linked_document_list in linked_document_dict.values():
+            for linked_doc in linked_document_list:
+                doc_word_count = {}
+                for token in linked_doc.tokens:
+                    if token in doc_word_count.keys():
+                        doc_word_count[token] = doc_word_count[token] + 1
+                    else:
+                        doc_word_count[token] = 1
+                linked_doc.any_analysis["doc_word_count"] = doc_word_count
+
+                for key in doc_word_count.keys():
+                    if key in corpus_word_count.keys():
+                        corpus_word_count[key] = corpus_word_count[key] + doc_word_count[key]
+                    else:
+                        corpus_word_count[key] = doc_word_count[key]
+        return corpus_word_count
+
+
+    def perform(self,package:merm_model.PipelinePackage):
+
+
+        if type(package.linked_document_list) is list:
+            corpus_word_count = self.count_as_doc_list(package.linked_document_list)
+        else:
+            corpus_word_count = self.count_as_doc_dict(package.linked_document_list)
+
+        package.any_analysis_dict["corpus_word_count"] = corpus_word_count
+        count = str(len(corpus_word_count))
+        mx = str(max(list(corpus_word_count.values())))
+        median = str(stats.median(list(corpus_word_count.values())))
+        stdev = str(stats.stdev(list(corpus_word_count.values())))
+        doc_count = str(len(package.linked_document_list))
+
+        log_string = "Document count: " + doc_count + \
+            "\nWord count: " + count + \
+            "\nMax: " + mx + \
+            "\nMedian: " + median + \
+            "\nstdev: " + stdev
+
+        package.log_stage(log_string)
         return package
 
 

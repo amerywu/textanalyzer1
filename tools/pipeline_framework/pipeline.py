@@ -42,6 +42,7 @@ _sklearn_lda_steps = [
 _text_rank = [
     (10, "TextCleaner_DF"),
     (20, "DataframeToListOfLists"),
+    (35, "LinkedDocCorpusWordCount"),
     (30, "TextRankGrouped_SubPipe"),
     (40, "GensimLdaGrouped_SubPipe"),
     (50, "TextRankResultsToLinkedDocList"),
@@ -50,6 +51,7 @@ _text_rank = [
     (65, "GensimLdaGrouped_SubPipe"),
     (67, "NounPhraseResultsToLinkedDocList"),
     (70, "GensimLdaGrouped_SubPipe"),
+    (80, "GensimSentenceFinder"),
 
 
 

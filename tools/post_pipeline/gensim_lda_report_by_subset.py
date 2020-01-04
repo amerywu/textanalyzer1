@@ -110,19 +110,9 @@ def break_corpus_as_sentences(docs_list:List[merm_model.LinkedDocument]):
 
 
 def find_salient_sentences(topiclist:List[Tuple[str,int]],package, topicid):
+
     all_sentences = get_text_rank_sentences(package, topicid)
     return compile_sentences(all_sentences, topiclist)
-    raw_sentences = []
-    if is_by_rank(topicid):
-        splittopic = topicid.split("_")
-        idx = int(splittopic.pop())
-        raw_sentences = compile_sentences(docs_dict[topicid][idx],topiclist)
-    else:
-        for sentences in docs_dict[topicid].values():
-            raw_sentences = raw_sentences + compile_sentences(sentences,topiclist)
-
-
-    return raw_sentences
 
 def compile_sentences(sentences, topiclist):
     raw_sentences = []

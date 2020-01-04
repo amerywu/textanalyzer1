@@ -69,7 +69,11 @@ class TextRankGrouped_SubPipe:
 
         log.getLogger().info("Subset: " + str(sub_corpus_name))
         log.getLogger().info(":TextRank: ")
-        log_string = "\n++++++++++++++++++++++++++++++\nSubset: " + str(sub_corpus_name)
+        log_string = "\n\n\n++++++++++++++++++++++++++++++\nSubset: " + str(sub_corpus_name)
+
+        package_one_group = manifest["LinkedDocCorpusWordCount"].perform(package_one_group)
+        log_string = log_string + package_one_group.stage_log()
+
         package_one_group = manifest["TextRank"].perform(package_one_group)
         log_string = log_string + "\n\n" + package_one_group.stage_log()
         log.getLogger().info(":LinkedDocCorpusStopWordGenerator: ")

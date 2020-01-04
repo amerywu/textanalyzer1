@@ -90,13 +90,16 @@ class GensimLdaGrouped_SubPipe:
                         sub_corpus_name,
                         manifest):
 
-        log_string = "\n\n-----------\nSubset:  " + sub_corpus_name +"\n"
+        log_string = "\n\n\n-----------\nLDA on Subset:  " + sub_corpus_name +"\n"
+
+        package_one_group = manifest["LinkedDocCorpusWordCount"].perform(package_one_group)
+        log_string = log_string + "\n" +package_one_group.stage_log()
         package_one_group = manifest["StopWordRemoval"].perform(package_one_group)
-        log_string = log_string + package_one_group.stage_log()
+        log_string = log_string+ "\n"  + package_one_group.stage_log()
         package_one_group = manifest["ListOfListsToGensimCorpora"].perform(package_one_group)
-        log_string = log_string + package_one_group.stage_log()
+        log_string = log_string+ "\n"  + package_one_group.stage_log()
         package_one_group = manifest["GensimLDA"].perform(package_one_group)
-        log_string = log_string + package_one_group.stage_log()
+        log_string = log_string+ "\n"  + package_one_group.stage_log()
 
         dict_for_group_processing["lda_models_by_group"][sub_corpus_name] = package_one_group.model
         dict_for_group_processing["lda_corpus_by_group"][sub_corpus_name] = package_one_group.corpus
