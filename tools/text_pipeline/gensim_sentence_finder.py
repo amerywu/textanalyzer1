@@ -9,31 +9,45 @@ class GensimSentenceFinder:
     def __init__(self):
         pass
 
+    def split_major(self, major_string):
+        if "_" in major_string:
+            as_list = major_string.split("_")
+            rank = int(as_list.pop())
+            major = ""
+            for t in as_list:
+                major = major + t
+            return (major, rank)
+        else:
+            return (major_string, -1)
+
     def perform(self, package: merm_model.PipelinePackage):
         env = package.dependencies_dict["env"]
         report_dir = env.config["job_instructions"]["output_folder"]
-
+        lda_all_groups = {}
         csv_list_of_lists = []
         csv_list_of_lists.append(["text_source", "major", "topic_id", "term", "weight"])
         report_sentences = env.config.getboolean('ml_instructions', 'gensim_lda_report_sentence_level')
         # analysis_key = gensim_grouped.analysis_output_label(package)
         minimum_doc_count = package.dependencies_dict["env"].config.getint('ml_instructions', 'minimum_doc_count')
-        for idxname, topicdict in package.any_analysis_dict.items():
-            if "Gensim_LDA" in idxname:
-                for majorid, majortopics in topicdict.items():
-                    report_for_index = "\n\n\n+++++++++++++++++++\n\nReport for " + idxname + "_" + majorid + "\n\n"
-                    # if report_sentences == True:
-                    #     corpus_as_sentences = break_corpus_as_sentences(docs_list)
-                    # report_for_index += "Corpus Size: " + str(len(docs_list)) + "\n"
+        for corpus_name, topic_nalysis_dict in package.any_analysis_dict.items():
+            if "Gensim_LDA" in corpus_name:
+                corpus_dict = {}
+                for majorid, majortopics in topic_nalysis_dict.items():
+                    major_dict = {}
+                    topic_dict = {}
+                    if majorid not in major_dict.keys():
+                        major_dict[majorid] = []
 
-                    doc_count = len(self.get_text_rank_sentences(package, majorid))
-                    if doc_count >= minimum_doc_count:
-                        for topic, topiclist in majortopics.items():
-                            salient_sentences = self.find_salient_sentences(topiclist, package, majorid)
-                            report_for_index += "\n\nSALIENT_SENTENCES\n"
-                            for sentence in salient_sentences:
-                                report_for_index += sentence + "\n"
+
+                    for topic, topiclist in majortopics.items():
+                        if topic not in topic_dict.keys():
+                            topic_dict[topic] = []
+                        salient_sentences = self.find_salient_sentences(topiclist, package, majorid)
+                        topic_dict[topic] = salient_sentences
+                    corpus_dict[majorid] = topic_dict
+                lda_all_groups[corpus_name] = corpus_dict
         package.log_stage("Identified salient sentences for each LDA topic")
+        package.any_analysis_dict["lda_all_groups"] = lda_all_groups
         return package
 
 
@@ -51,28 +65,34 @@ class GensimSentenceFinder:
         return self.compile_sentences(all_sentences, topiclist)
 
     def compile_sentences(self, sentences, topiclist):
-        raw_sentences = []
-        top_words_indices = [0, 1, 2, 3, 4, 5, 6]
 
-        bottomidx = 0
-        while (bottomidx < len(top_words_indices)):
-            topidx = bottomidx + 2
-            while topidx < len(top_words_indices):
-                words = [topiclist[bottomidx][0], topiclist[topidx - 1][0], topiclist[topidx][0]]
-                raw_sentences = raw_sentences + self.words_in_sentence_list(words, sentences)
-                topidx = topidx + 1
-            bottomidx = bottomidx + 1
+        return_dict = {}
 
-        if len(raw_sentences) < 15:
-            bottomidx = 0
-            while (bottomidx < len(top_words_indices)):
-                topidx = bottomidx + 1
-                while topidx < len(top_words_indices):
-                    words = [topiclist[bottomidx][0], topiclist[topidx][0]]
-                    raw_sentences = raw_sentences + self.words_in_sentence_list(words, sentences)
-                    topidx = topidx + 1
-                bottomidx = bottomidx + 1
-        return raw_sentences
+        while (len(topiclist) > 3):
+            anchor = topiclist.pop()[0]
+            idx = 0
+            while idx < len(topiclist) :
+                idxplus = idx + 1
+                if idxplus < len(topiclist):
+                    words3 = [anchor, topiclist[idx][0], topiclist[idxplus][0]]
+                    salient_sentences = self.words_in_sentence_list(words3, sentences)
+                    self.add_to_sentence_dict(return_dict,salient_sentences,words3)
+
+                words2 = [anchor, topiclist[idx][0]]
+                salient_sentences = self.words_in_sentence_list(words2, sentences)
+                self.add_to_sentence_dict(return_dict, salient_sentences, words2)
+
+
+                idx = idx + 1
+
+
+        return return_dict
+
+
+    def add_to_sentence_dict(self, return_dict, sentences, words):
+        if len(sentences) > 0:
+            return_dict[str(words)] = sentences
+
 
     def words_in_sentence_list(self, tokens: List[str], sentences):
         raw_sentences = []
@@ -83,7 +103,7 @@ class GensimSentenceFinder:
                 if not token in sentence_words:
                     all_tokens_found = False
             if all_tokens_found == True:
-                raw_sentences.append(str(tokens) + " ==> " + sentence)
+                raw_sentences.append(sentence)
         return raw_sentences
 
     def is_by_rank(self, topicid):
