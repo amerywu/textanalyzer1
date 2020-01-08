@@ -6,7 +6,7 @@ from typing import Tuple
 
 import tools.model.model_classes as merm_model
 import tools.utils.envutils as env
-import tools.utils.es_connect as es_conn
+import tools.elasticsearch_management.es_connect as es_conn
 import tools.utils.log as log
 import tools.utils.text_parsing_utils as parser
 
@@ -15,98 +15,67 @@ index_suffix = "@part_of_doc"
 
 def newindex_json():
     json = {
-        "settings": {
-            "number_of_shards": 1,
-            "analysis": {
-                "filter": {
-                    "english_stop": {
-                        "type": "stop",
-                        "stopwords": "_english_"
-                    },
-                    "english_keywords": {
-                        "type": "keyword_marker",
-                        "keywords": []
-                    },
-                    "english_stemmer": {
-                        "type": "stemmer",
-                        "language": "english"
-                    },
-                    "english_possessive_stemmer": {
-                        "type": "stemmer",
-                        "language": "possessive_english"
-                    }
-                },
-                "analyzer": {
-                    "english": {
-                        "tokenizer": "standard",
-                        "filter": [
-                            "english_possessive_stemmer",
-                            "lowercase",
-                            "english_stop",
-                            "english_keywords",
-                            "english_stemmer"
-                        ]
-                    }
-                }
+   "settings":{
+      "index":{
+         "number_of_shards":3,
+         "number_of_replicas":2
+      }
+   },
+   "mappings":{
+      "_doc":{
+         "properties":{
+            "title":{
+               "type":"text",
+               "fields":{
+                  "english":{
+                     "type":"text",
+                     "analyzer":"english"
+                  }
+               }
+            },
+            "id":{
+               "type":"text"
+            },
+            "salient":{
+               "type":"text"
+            },
+            "humanlabels":{
+               "type":"keyword"
+            },
+            "mllabels":{
+               "type":"keyword"
+            },
+            "spacealias":{
+               "type":"text"
+            },
+            "originalurl":{
+               "type":"text"
+            },
+            "webui":{
+               "type":"text"
+            },
+            "content":{
+               "type":"text",
+               "fields":{
+                  "english":{
+                     "type":"text",
+                     "analyzer":"english"
+                  }
+               }
+            },
+            "provider":{
+               "type":"text"
+            },
+            "updated":{
+               "type":"double"
+            },
+            "space":{
+               "type":"text"
             }
-
-        },
-        "mappings": {
-            "_doc": {
-                "properties": {
-                    "title": {
-                        "type": "text",
-                        "fields": {
-                            "english": {
-                                "type":     "text",
-                                "analyzer": "english"
-                            }
-                        }
-                    },
-                    "id": {
-                        "type": "text"
-
-                    },
-                    "salient": {
-                        "type": "text"
-                    },
-                    "humanlabels": {
-                        "type": "keyword"
-                    },
-                    "mllabels": {
-                        "type": "keyword"
-                    },
-                    "spacealias": {
-                        "type": "text"
-                    },
-                    "originalurl": {
-                        "type": "text"
-                    },
-                    "webui": {
-                        "type": "text"
-                    },
-                    "content": {
-                        "type": "text",
-                        "fields": {
-                            "english": {
-                                "type":     "text",
-                                "analyzer": "english"
-                            }
-                        }
-                    },
-                    "provider": {
-                        "type": "text"
-                    },
-                    "updated": {
-                        "type": "double"
-                    },
-                    "space": {
-                        "type": "text"
-                    }
-                }
-            }
-        }
-    }
+         }
+      }
+   }
+}
     return json
 
 

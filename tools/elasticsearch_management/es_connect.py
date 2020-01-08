@@ -2,7 +2,7 @@ from elasticsearch import Elasticsearch
 
 import tools.utils.envutils as env
 import tools.utils.log as log
-
+import time
 
 def connectToES():
 
@@ -30,23 +30,19 @@ def connectToES():
         return es
 
 
+def delete_index(index_name):
+    try:
+        es = connectToES()
+        es.indices.delete(index=index_name, ignore=[400, 404])
+    except Exception as e:
+        msg = "WARN: " +  str(e)
+        log.getLogger().error(msg)
+
 
 def create_and_register_index(index_name:str, body_json):
     try:
-
         es = connectToES()
-
-
-
-
-
-        es.indices.create(index=index_name, ignore=400, body=body_json)
-        provider_index_tuple = index_name.split("$$")
-        registry_json = { "id" : index_name,
-                          "indexname" : index_name,
-                          "provider" : provider_index_tuple[0] + "$$"
-                          }
-        es.index(index="merm_meta$$indexregistry", doc_type='_doc', id=index_name, body= registry_json)
+        es.indices.create(index=index_name, body=body_json)
     except Exception as e:
         s = str(e)
         log.getLogger().error("Could not create index. " + s)
@@ -55,9 +51,7 @@ def create_and_register_index(index_name:str, body_json):
 def retrieve_index_registry():
     es = connectToES()
     results = es.indices.get('*')
-    indices = results.keys()
-    for key in indices:
-        log.getLogger().info("%d spaces found" +str(key))
+    indices = list(results.keys())
     return indices
 
 

@@ -1,12 +1,5 @@
-from gensim import corpora
-
 import tools.model.model_classes as merm_model
-import tools.utils.dfutils as dfutils
-import tools.utils.envutils as env
 import tools.utils.log as log
-import tools.utils.text_parsing_utils
-import tools.elasticsearch_extraction.es_extraction as esextract
-import tools.utils.es_connect as esconn
 
 
 class GroupByESIndex:

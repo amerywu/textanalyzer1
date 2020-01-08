@@ -1,14 +1,11 @@
 import json
-from operator import itemgetter
-from typing import Dict
 from typing import List
 from typing import Tuple
 
 import tools.model.model_classes as merm_model
 import tools.utils.envutils as env
-import tools.utils.es_connect as es_conn
+import tools.elasticsearch_management.es_connect as es_conn
 import tools.utils.log as log
-import tools.utils.text_parsing_utils as parser
 
 index_suffix = "@part_of_doc"
 

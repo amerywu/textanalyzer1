@@ -61,7 +61,7 @@ class LinkedDocCorpusWordCount:
         stdev = str(stats.stdev(list(corpus_word_count.values())))
         doc_count = str(len(package.linked_document_list))
 
-        log_string = "Document count: " + doc_count + \
+        log_string = "\nDocument count: " + doc_count + \
             "\nWord count: " + count + \
             "\nMax: " + mx + \
             "\nMedian: " + median + \

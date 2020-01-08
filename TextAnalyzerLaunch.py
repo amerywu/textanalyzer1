@@ -1,5 +1,5 @@
 
-import tools.elasticsearch_extraction.es_extraction as es_extract
+import tools.elasticsearch_management.es_extraction as es_extract
 import tools.utils.envutils as env
 import tools.utils.log as log
 import tools.pipeline_framework.factory as factory

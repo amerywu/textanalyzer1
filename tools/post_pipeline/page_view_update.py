@@ -1,5 +1,5 @@
 import tools.model.model_classes as merm_model
-import tools.utils.es_connect as es_conn
+import tools.elasticsearch_management.es_connect as es_conn
 import tools.utils.log as log
 
 index_suffix = "@part_of_doc"

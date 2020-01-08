@@ -3,7 +3,7 @@ import os
 import time as dt
 import unittest
 
-import tools.elasticsearch_extraction.es_extraction as ex
+import tools.elasticsearch_management.es_extraction as ex
 import tools.utils.envutils as env
 
 
