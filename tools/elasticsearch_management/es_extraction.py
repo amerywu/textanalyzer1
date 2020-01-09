@@ -71,7 +71,7 @@ def _extract_from_one_provider(es, provider, pipe, dependencies_dict:Dict):
             continue
         if count > limit:
             break
-        if provider in index_name  :
+        if provider.strip() in index_name  :
             df = _retrieve_index_content(es, index_name, provider, limit)
             if not df.empty:
                 log.getLogger().debug("Retrieved " + index_name + ": row count " + str(df.shape))
@@ -137,6 +137,8 @@ def _process_row(content,provider):
         return _process_pp_row(content)
     elif provider == "reddit":
         return _process_reddit_row(content)
+    elif provider == "corpus_text_rank":
+        return _process_text_rank_row(content)
     else:
         raise Exception("Unknown Provider " + provider)
 
@@ -208,6 +210,18 @@ def _process_reddit_row(content):
         "id": content['_id'],
         "doc_url": content['_source']['doc_url'],
         "created": content['_source']['created'],
+    }
+    return row
+
+
+def _process_text_rank_row(content):
+    row = {
+        "category": content['_source']['category'],
+        "sentence": content['_source']['sentence'],
+        "id": content['_id'],
+        "rank": content['_source']['rank'],
+        "created": content['_source']['created'],
+        "src": content['_source']['src'],
     }
     return row
 

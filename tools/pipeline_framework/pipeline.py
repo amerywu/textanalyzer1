@@ -52,10 +52,14 @@ _text_rank = [
     (67, "NounPhraseResultsToLinkedDocList"),
     (70, "GensimLdaGrouped_SubPipe"),
     (80, "GensimSentenceFinder"),
-
-
-
 ]
+
+
+
+_category_prediction = [
+    (10, "DataframeToListOfLists"),
+    (20, "LinkedDocListToScikitRFCorpus")
+    ]
 
 _save_as_csv = [
     (10, "SaveDfAsCsv")
@@ -99,6 +103,8 @@ def pick_pipeline():
         return _rake
     elif pipeline_name == '_text_rank':
         return _text_rank
+    elif pipeline_name == "_category_prediction":
+        return _category_prediction
     else:
         log.getLogger().warning(str(pipeline_name) + " is invalid. Please configure tools.ini and create a relevant list of steps within this script")
         return []

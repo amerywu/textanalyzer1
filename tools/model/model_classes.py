@@ -46,6 +46,23 @@ def linked_document_from_dict(dict, provider):
                               0,
                               dict["groupedBy"] # groupedby
                               )
+    elif "corpus_text_rank" in provider:
+        return LinkedDocument(dict["sentence"],  # raw
+                              dict["category"],  # title
+                              [],  # tokens
+                              dict["src"],  # src
+                              None,  # ui
+                              provider,  # provider
+                              dict["id"],  # uid
+                              dict["src"],  # index_name
+                              dict["category"],  # space
+                              None,  # scores
+                              [],  # corpus_doc
+                              {},  # any_analysis
+                              {},  # any_inputs
+                              dict["created"], # created
+                              dict["rank"]  # groupedby
+                              )
     else:
         raise Exception("Unknown provider " + provider)
 
