@@ -58,7 +58,9 @@ _text_rank = [
 
 _category_prediction = [
     (10, "DataframeToListOfLists"),
-    (20, "LinkedDocListToScikitRFCorpus")
+    (15, "ExcludeBySpace"),
+    (20, "LinkedDocListToScikitRFCorpus"),
+    (30, "ScikitRF")
     ]
 
 _save_as_csv = [

@@ -3,6 +3,7 @@ from tools.text_pipeline import gensim_corpora_builder
 from tools.text_pipeline import googleanalytics
 from tools.text_pipeline import tfidf
 from tools.text_pipeline import sklearn_latent_dirichlet_allocation
+from tools.text_pipeline import sklearn_random_forest
 from tools.text_pipeline import gensim_latent_dirichlet_allocation
 from tools.text_pipeline import document_filter
 from tools.text_pipeline import sklearn_corpora_builder
@@ -34,9 +35,12 @@ class PipelineManifest:
         "GensimTfIdfModelBuilder" : tools.text_pipeline.tfidf.GensimTfIdfModelBuilder(),
         "GensimTfIdfTopTerms" : tools.text_pipeline.tfidf.GensimTfIdfTopTerms(),
         "StopWordRemoval" : tools.text_pipeline.document_filter.StopWordRemoval(),
+        "ExcludeBySpace": tools.text_pipeline.document_filter.ExcludeBySpace(),
+        "ExcludeByGroup": tools.text_pipeline.document_filter.ExcludeByGroup(),
         "UniquePageViewIntegration": tools.text_pipeline.googleanalytics.UniquePageViewIntegration(),
         "UniquePageViewIntegrationDynamic": tools.text_pipeline.googleanalytics.UniquePageViewIntegrationDynamic(),
         "ScikitLDA": tools.text_pipeline.sklearn_latent_dirichlet_allocation.ScikitLDA(),
+        "ScikitRF": tools.text_pipeline.sklearn_random_forest.ScikitRF(),
         "SciKitLDAReport":tools.text_pipeline.sklearn_latent_dirichlet_allocation.SciKitLDAReport(),
         "LinkedDocListToScikitLDACorpus": tools.text_pipeline.sklearn_corpora_builder.LinkedDocListToScikitLDACorpus(),
         "LinkedDocListToScikitRFCorpus" : tools.text_pipeline.sklearn_corpora_builder.LinkedDocListToScikitRFCorpus(),

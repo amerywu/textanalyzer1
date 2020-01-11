@@ -9,25 +9,26 @@ class GroupByESIndex:
 
     def perform(self, package: merm_model.PipelinePackage):
         thetype = type(package.linked_document_list)
-        if thetype  is dict:
+        if thetype is dict:
             return package
 
         linked_doc_by_index = {}
-        group_testenv = package.dependencies_dict["env"].config.getboolean("pipeline_instructions","group_testenv")
+        group_testenv = package.dependencies_dict["env"].config.getboolean("pipeline_instructions", "group_testenv")
         if True == group_testenv:
-            relevant_groups_string = package.dependencies_dict["env"].config["pipeline_instructions"] ["group_testenv_list"]
+            relevant_groups_string = package.dependencies_dict["env"].config["pipeline_instructions"][
+                "group_testenv_list"]
             relevant_groups_list = relevant_groups_string.split(",")
-            linked_doc_by_index = self._group_test_groups(package,relevant_groups_list)
+            linked_doc_by_index = self._group_test_groups(package, relevant_groups_list)
         else:
             linked_doc_by_index = self._group_all_groups(package)
 
-
         new_package = merm_model.PipelinePackage(package.model, package.corpus, package.dict, linked_doc_by_index,
-                                                 package.any_analysis, package.any_inputs_dict, package.dependencies_dict)
+                                                 package.any_analysis, package.any_inputs_dict,
+                                                 package.dependencies_dict)
 
-        new_package.log_stage("Divided the entire corpus into groups. The groups created are " + str(linked_doc_by_index.keys()))
+        new_package.log_stage(
+            "Divided the entire corpus into groups. The groups created are " + str(linked_doc_by_index.keys()))
         return new_package
-
 
     def _group_all_groups(self, package):
         linked_doc_by_index = {}
@@ -66,7 +67,6 @@ class StopWordRemoval:
 
     def perform(self, package: merm_model.PipelinePackage):
 
-
         log.getLogger().info("StopWordRemoval")
         stop_words = []
         load_source = ""
@@ -98,7 +98,87 @@ class StopWordRemoval:
                     new_tokens.append(word)
             linked_doc.tokens = new_tokens
 
-        package.log_stage("Removed all stop words from the corpus tokens (i.e., bag of words). The stop words were loaded " + load_source)
+        package.log_stage(
+            "Removed all stop words from the corpus tokens (i.e., bag of words). The stop words were loaded " + load_source)
         return package
 
 
+class ExcludeBySpace:
+
+    def __init__(self):
+        pass
+
+    def perform(self, package: merm_model.PipelinePackage):
+        thetype = type(package.linked_document_list)
+        if thetype is dict:
+            return package
+
+        new_linked_doc_list = []
+        include_list = package.dependencies_dict["env"].config["job_instructions"]["filter_space_include"].split(",")
+        exclude_list = package.dependencies_dict["env"].config["job_instructions"]["filter_space_exclude"].split(",")
+
+        if len(include_list) == 1 and len(include_list[0]) == 0:
+            new_linked_doc_list = package.linked_document_list
+
+        else:
+            for linked_doc in package.linked_document_list:
+                for include in include_list:
+                    if include:
+                        if include in str(linked_doc.space):
+                            new_linked_doc_list.append(linked_doc)
+
+
+        for linked_doc in new_linked_doc_list:
+            for exclude in exclude_list:
+                if exclude and exclude in str(linked_doc.space):
+                    new_linked_doc_list.remove(linked_doc)
+
+
+
+        new_package = merm_model.PipelinePackage(package.model, package.corpus, package.dict, new_linked_doc_list,
+                                                 package.any_analysis, package.any_inputs_dict,
+                                                 package.dependencies_dict)
+
+        new_package.log_stage(
+            "\nInclude filter was: " + str(include_list) + "\nExclude filter was:" + str(exclude_list) + "\nRemaining documents count: " + str(
+                len(new_linked_doc_list)))
+        return new_package
+
+
+class ExcludeByGroup:
+
+    def __init__(self):
+        pass
+
+    def perform(self, package: merm_model.PipelinePackage):
+        thetype = type(package.linked_document_list)
+        if thetype is dict:
+            return package
+
+        new_linked_doc_list = []
+        include_list = package.dependencies_dict["env"].config["job_instructions"]["filter_group_include"]
+        exclude_list = package.dependencies_dict["env"].config["job_instructions"]["filter_group_exclude"]
+
+        if len(include_list) == 1 and len(include_list[0]) == 0:
+            new_linked_doc_list = package.linked_document_list
+
+        else:
+            for linked_doc in package.linked_document_list:
+                for include in include_list:
+                    if include:
+                        if include in str(linked_doc.groupedBy):
+                            new_linked_doc_list.append(linked_doc)
+
+        for linked_doc in new_linked_doc_list:
+            for exclude in exclude_list:
+                if exclude and exclude in str(linked_doc.groupedBy):
+                    new_linked_doc_list.remove(linked_doc)
+
+        new_package = merm_model.PipelinePackage(package.model, package.corpus, package.dict, new_linked_doc_list,
+                                                 package.any_analysis, package.any_inputs_dict,
+                                                 package.dependencies_dict)
+
+        new_package.log_stage(
+            "\nInclude filter was: " + include + "\nExclude filter was:" + exclude + "Remaining documents count: " + str(
+                len(new_linked_doc_list)))
+        return new_package
