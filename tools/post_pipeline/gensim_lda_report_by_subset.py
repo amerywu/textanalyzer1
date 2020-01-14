@@ -51,8 +51,8 @@ def _generate_doc(src, category, analysis_type, topic, words, sentence):
     data['category'] = category
     data['analysis_type'] = analysis_type
     data['topic'] = topic
-    data['words'] = sentence
-    data['sentence'] = words
+    data['words'] = words
+    data['sentence'] = sentence
     data['src'] = src
     data["created"] = _current_milli_time()
     return data

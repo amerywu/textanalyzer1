@@ -11,7 +11,7 @@ from tools.text_pipeline import topic_comparator
 from tools.text_pipeline import save_corpus_to_file
 from tools.text_pipeline import job_df_analysis
 from tools.text_pipeline import df_analysis
-
+from tools.text_pipeline import pipeline_utils
 from  tools.text_pipeline import rake_analysis
 from tools.text_pipeline import text_cleaner
 from tools.text_pipeline import text_rank
@@ -37,8 +37,12 @@ class PipelineManifest:
         "StopWordRemoval" : tools.text_pipeline.document_filter.StopWordRemoval(),
         "ExcludeBySpace": tools.text_pipeline.document_filter.ExcludeBySpace(),
         "ExcludeByGroup": tools.text_pipeline.document_filter.ExcludeByGroup(),
+        "CountBySpaceAndGroup" : tools.text_pipeline.document_filter.CountBySpaceAndGroup(),
+        "EvenBySpace" : tools.text_pipeline.document_filter.EvenBySpace(),
+        "EvenByGroup": tools.text_pipeline.document_filter.EvenByGroup(),
         "UniquePageViewIntegration": tools.text_pipeline.googleanalytics.UniquePageViewIntegration(),
         "UniquePageViewIntegrationDynamic": tools.text_pipeline.googleanalytics.UniquePageViewIntegrationDynamic(),
+        "MergeCategories1" : tools.text_pipeline.pipeline_utils.MergeCategories1(),
         "ScikitLDA": tools.text_pipeline.sklearn_latent_dirichlet_allocation.ScikitLDA(),
         "ScikitRF": tools.text_pipeline.sklearn_random_forest.ScikitRF(),
         "SciKitLDAReport":tools.text_pipeline.sklearn_latent_dirichlet_allocation.SciKitLDAReport(),

@@ -66,8 +66,10 @@ def _dispatch_to_elastic_search(text_rank_results, src):
     for category in text_rank_results:
         analysis = text_rank_results[category]
         if type(analysis) is dict:
-            bulk_list = []
+
             for rank in analysis.keys():
+                bulk_list = []
+
                 for sentence in analysis[rank]:
                     count = count + 1
                     if count % 1000 == 0:
@@ -75,7 +77,7 @@ def _dispatch_to_elastic_search(text_rank_results, src):
                     bulk_list.append(_index_dict("corpus_text_rank", src, category,rank, sentence))
                     #ingestor._dispatch("corpus_text_rank", _id_generator(),json)
                 log.getLogger().info("dispatching")
-            ingestor._dispatch_bulk("corpus_text_rank", bulk_list)
+                ingestor._dispatch_bulk("corpus_text_rank", bulk_list)
     log.getLogger().info("Dispatched "+ str(count) + " rows to ES")
 
 

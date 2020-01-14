@@ -3,6 +3,7 @@ from typing import Tuple
 import tools.model.model_classes as merm_model
 import tools.utils.text_parsing_utils as parser
 import re
+import tools.utils.log as log
 
 class GensimSentenceFinder:
 
@@ -32,7 +33,10 @@ class GensimSentenceFinder:
         for corpus_name, topic_nalysis_dict in package.any_analysis_dict.items():
             if "Gensim_LDA" in corpus_name:
                 corpus_dict = {}
+                log.getLogger().info(str(corpus_name))
+
                 for majorid, majortopics in topic_nalysis_dict.items():
+                    log.getLogger().info(str(majorid))
                     major_dict = {}
                     topic_dict = {}
                     if majorid not in major_dict.keys():

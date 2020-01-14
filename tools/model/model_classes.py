@@ -30,6 +30,7 @@ def _typeOrNone(obj):
 def linked_document_from_dict(dict, provider):
 
     if "job" in provider:
+
         return LinkedDocument(dict["skills"], #raw
                               dict["jobFinal"], #title
                               [], #tokens
@@ -46,6 +47,7 @@ def linked_document_from_dict(dict, provider):
                               0,
                               dict["groupedBy"] # groupedby
                               )
+
     elif "corpus_text_rank" in provider:
         return LinkedDocument(dict["sentence"],  # raw
                               dict["category"],  # title
@@ -62,6 +64,24 @@ def linked_document_from_dict(dict, provider):
                               {},  # any_inputs
                               dict["created"], # created
                               dict["rank"]  # groupedby
+                              )
+
+    elif "corpus_lda" in provider:
+        return LinkedDocument(dict["sentence"],  # raw
+                              dict["category"],  # title
+                              [],  # tokens
+                              dict["src"],  # src
+                              None,  # ui
+                              provider,  # provider
+                              dict["id"],  # uid
+                              dict["src"],  # index_name
+                              dict["analysis_type"],  # space
+                              None,  # scores
+                              [],  # corpus_doc
+                              {},  # any_analysis
+                              {},  # any_inputs
+                              dict["created"], # created
+                              dict["category"]  # groupedby
                               )
     else:
         raise Exception("Unknown provider " + provider)
@@ -177,6 +197,7 @@ class PipelinePackage:
             self.linked_document_list = []
 
     def log_stage(self, log):
+        print(log)
         self.any_analysis_dict["stage_log"] = log
 
     def stage_log(self):

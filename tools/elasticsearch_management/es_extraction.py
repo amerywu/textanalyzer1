@@ -72,7 +72,7 @@ def _extract_from_one_provider(es, provider, pipe, dependencies_dict:Dict):
         if count > limit:
             break
         if provider.strip() in index_name  :
-            df = _retrieve_index_content(es, index_name, provider, limit)
+            df = _retrieve_index_content(es, index_name, provider, limit, dependencies_dict)
             if not df.empty:
                 log.getLogger().debug("Retrieved " + index_name + ": row count " + str(df.shape))
                 count = count + df.shape[0]
@@ -96,19 +96,44 @@ def initiate_extraction(pipe, dependencies_dict):
     es = es_conn.connectToES()
     return _extract(es, pipe, dependencies_dict)
 
-def scrolled_search(es, index_name, limit):
+
+def _generate_query(dependencies_dict:Dict):
+    query_type = dependencies_dict["env"].config["extract_instructions"]["query_type"]
+    if query_type == "fetch_all":
+        return {
+            'query': {
+                'match_all': {}
+            }
+        }
+    else:
+        query_field = dependencies_dict["env"].config["extract_instructions"]["query_field"]
+        query_value = dependencies_dict["env"].config["extract_instructions"]["query_value"]
+        log.getLogger().info("Searching " + query_field + " for " + query_value)
+
+
+        return {
+            'query': {
+                'match': {
+                    query_field : query_value
+                }
+            }
+        }
+
+
+
+
+def scrolled_search(es, index_name, limit,dependencies_dict):
     log.getLogger().info(index_name)
     total = 0
+    search_body = _generate_query(dependencies_dict)
     page_list = []
     page = es.search(
         index= index_name,
         scroll='2m',
         size=1000,
-        body={
-            'query': {
-                'match_all': {}
-            }
-        })
+        body= search_body)
+
+
     sid = page['_scroll_id']
     scroll_size = page['hits']['total']['value']
     page_list.append(page)
@@ -139,15 +164,17 @@ def _process_row(content,provider):
         return _process_reddit_row(content)
     elif provider == "corpus_text_rank":
         return _process_text_rank_row(content)
+    elif provider == "corpus_lda":
+        return _process_lda_row(content)
     else:
         raise Exception("Unknown Provider " + provider)
 
 #Retrieves all documents in an ES Index. Each index contains content from one confluence space
-def _retrieve_index_content(es, index_name, provider, limit):
+def _retrieve_index_content(es, index_name, provider, limit, dependencies_dict:Dict):
 
     rows_list = []
     log.getLogger().debug("Retrieving content for " + index_name)
-    space_content_page_list = scrolled_search(es, index_name, limit)
+    space_content_page_list = scrolled_search(es, index_name, limit,dependencies_dict)
     count = 0
     for space_content_result in space_content_page_list:
         for content in space_content_result['hits']['hits']:
@@ -220,6 +247,17 @@ def _process_text_rank_row(content):
         "sentence": content['_source']['sentence'],
         "id": content['_id'],
         "rank": content['_source']['rank'],
+        "created": content['_source']['created'],
+        "src": content['_source']['src'],
+    }
+    return row
+
+def _process_lda_row(content):
+    row = {
+        "category": content['_source']['category'],
+        "sentence": content['_source']['sentence'],
+        "id": content['_id'],
+        "analysis_type": content['_source']['analysis_type'],
         "created": content['_source']['created'],
         "src": content['_source']['src'],
     }

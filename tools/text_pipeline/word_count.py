@@ -63,8 +63,8 @@ class LinkedDocCorpusWordCount:
 
         log_string = "\nDocument count: " + doc_count + \
             "\nWord count: " + count + \
-            "\nMax: " + mx + \
-            "\nMedian: " + median + \
+            "\nMax Frequency: " + mx + \
+            "\nMedian Frequency: " + median + \
             "\nstdev: " + stdev
 
         package.log_stage(log_string)
@@ -87,14 +87,19 @@ class LinkedDocCorpusStopWordGenerator:
 
         package.any_analysis_dict["corpus_word_count"] = corpus_word_count
         stop_words_global = package.dependencies_dict["utils"]._stop_word_list_generator(package)
-        stop_words_top = self._top_threshold(package)
-        stop_words_bottom = self._bottom_threshold(package)
+        stop_words_top_tuple = self._top_threshold(package)
+        stop_words_top = stop_words_top_tuple[0]
+        lowest_freq_at_top = stop_words_top_tuple[1]
+        stop_words_bottom_tuple = self._bottom_threshold(package)
+        stop_words_bottom = stop_words_bottom_tuple[0]
+        max_freq_at_bottom = stop_words_bottom_tuple[1]
         stop_words = stop_words_bottom + stop_words_top +  stop_words_global
         analysis_key = colutils.incrementing_key("stop_words", package.any_analysis_dict)
         package.any_analysis_dict[analysis_key] = stop_words
         self.save_to_file(stop_words,package)
         package.log_stage("Generated stop words. \nGlobal stop word count: " + str(len(stop_words_global)) + "\nHigh frequency dynamically generated stop words: " + \
-                          str(len(stop_words_top)) + "\nLow frequency dynamically generated stop words: " + str(len(stop_words_bottom)))
+                          str(len(stop_words_top)) + "\nLow frequency dynamically generated stop words: " + str(len(stop_words_bottom)) +"\nMax Frequency at bottom: " + str(max_freq_at_bottom) + \
+                          "\nLowest Frequency removed at top: " + str(lowest_freq_at_top))
         return package
 
     def save_to_file(self, stop_words_new, package):
@@ -134,25 +139,34 @@ class LinkedDocCorpusStopWordGenerator:
         corpus_word_count = package.any_analysis_dict["corpus_word_count"]
         total_words = sum(list(corpus_word_count.values()))
         stop_words = []
+        lowest_freq = 10000000
         for key in corpus_word_count.keys():
-            proportion = corpus_word_count[key] / total_words
+            freq = corpus_word_count[key]
+            proportion = freq / total_words
             top_threshold = package.dependencies_dict["env"].config.getfloat("ml_instructions","stopword_top_threshold")
+
             if proportion > top_threshold:
                 stop_words.append(key)
+                if freq < lowest_freq:
+                    lowest_freq = freq
 
-        return stop_words
+        return (stop_words, lowest_freq)
 
     def _bottom_threshold(self, package:merm_model.PipelinePackage):
         corpus_word_count = package.any_analysis_dict["corpus_word_count"]
         total_words = sum(list(corpus_word_count.values()))
         stop_words = []
+        max_freq = 0
         for key in corpus_word_count.keys():
-            proportion = corpus_word_count[key] / total_words
+            freq = corpus_word_count[key]
+            proportion = freq / total_words
             bottom_threshold = package.dependencies_dict["env"].config.getfloat("ml_instructions","stopword_bottom_threshold")
             if proportion < bottom_threshold:
                 stop_words.append(key)
+                if freq > max_freq:
+                    max_freq = freq
 
-        return stop_words
+        return (stop_words, max_freq)
 
 
 

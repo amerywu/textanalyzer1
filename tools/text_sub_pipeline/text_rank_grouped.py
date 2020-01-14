@@ -76,9 +76,14 @@ class TextRankGrouped_SubPipe:
 
         package_one_group = manifest["TextRank"].perform(package_one_group)
         log_string = log_string + "\n\n" + package_one_group.stage_log()
+
+
         log.getLogger().info(":LinkedDocCorpusStopWordGenerator: ")
         package_one_group = manifest["LinkedDocCorpusStopWordGenerator"].perform(package_one_group)
         log_string = log_string + "\n\n" + package_one_group.stage_log()
+
+        package_one_group = manifest["LinkedDocCorpusWordCount"].perform(package_one_group)
+        log_string = log_string + package_one_group.stage_log()
 
         log.getLogger().info(":RakeAnalysisFromTextRank: ")
         package_one_group = manifest["RakeAnalysisFromTextRank"].perform(package_one_group)

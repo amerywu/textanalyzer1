@@ -4,7 +4,6 @@ import tools.model.model_classes as merm_model
 import tools.utils.envutils as env
 import tools.utils.log as log
 
-
 ######################################################
 # This script functions as programmatic configuration of a pipeline.
 # Other scripts in this package focus on a specific genre of functionality.
@@ -54,13 +53,18 @@ _text_rank = [
     (80, "GensimSentenceFinder"),
 ]
 
-
-
 _category_prediction = [
     (10, "DataframeToListOfLists"),
-    (15, "ExcludeBySpace"),
-    (20, "LinkedDocListToScikitRFCorpus"),
-    (30, "ScikitRF")
+    (12, "MergeCategories1"),
+    (14, "CountBySpaceAndGroup"),
+    (15, "ExcludeByGroup"),
+    (20, "ExcludeBySpace"),
+    (30, "CountBySpaceAndGroup"),
+    (40, "EvenByGroup"),
+    (45, "CountBySpaceAndGroup"),
+    (50, "LinkedDocListToScikitRFCorpus"),
+    (60, "ScikitRF"),
+
     ]
 
 _save_as_csv = [
@@ -117,6 +121,10 @@ def run_pipeline(package:merm_model.PipelinePackage):
     log.getLogger().warning("------- STARTING PIPELINE -------")
     env = package.dependencies_dict["env"]
     report_dir = env.config["job_instructions"]["output_folder"]
+    provider = env.config["extract_instructions"]["provider"]
+    pipeline_name = env.config["pipeline_instructions"]["pipeline_name"]
+    queryvalue = env.config["extract_instructions"]["query_value"]
+    file_name = provider + "_" + pipeline_name + "_" + queryvalue + ".txt"
 
 
     log_string = ""
@@ -139,7 +147,7 @@ def run_pipeline(package:merm_model.PipelinePackage):
         else:
             log.getLogger().warning("Continue run is FALSE")
 
-    env.overwrite_file(report_dir + "/" + "PipelineReport.txt", log_string)
+    env.overwrite_file(report_dir + "/" + file_name, log_string)
     log.getLogger().info("------- PIPELINE COMPLETED -------")
 
     # Post pipeline; This is where the data is no longer changing. Rather, the data is ready
