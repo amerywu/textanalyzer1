@@ -37,6 +37,10 @@ def _extract(es, pipe, dependencies_dict:Dict):
     elif provider == "none":
         _enter_pipeline(
             merm_model.PipelinePackage(None, None, None, None, {}, {}, dependencies_dict), pipe)
+    elif "," in provider:
+        provider_list = provider.split(",")
+        _extract_from_providers_merge(es,provider_list,pipe,dependencies_dict)
+
     else:
         _extract_from_one_provider(es, provider, pipe, dependencies_dict)
 
@@ -51,6 +55,47 @@ def _extract_from_all_providers(es, pipe, dependencies_dict):
     log.getLogger().debug("Extracting from all providers: " + str(providers_list))
     for provider in providers_list:
         _extract_from_one_provider(es,provider, pipe, dependencies_dict)
+
+
+def _extract_from_providers_merge(es, providers, pipe, dependencies_dict:Dict):
+    msg = "\n\n-------------------------\nPROVIDERS: " + str(providers) + "\n---------------------\n\n"
+    log.getLogger().warning(msg)
+    ignore_indices = dependencies_dict["env"].config["extract_instructions"]["ignore_indices"]
+    ignore_indices_list = ignore_indices.split(",")
+    indices = es_conn.retrieve_index_registry()
+
+    limit = _dev_limit(dependencies_dict)
+    count = 0
+
+    df_per_space_list: List[DataFrame] = []
+    for provider in providers:
+        count = 0
+        for index_name in indices:
+            if "@" in index_name:
+                continue
+            if index_name in ignore_indices_list:
+                continue
+            if count > limit:
+                break
+            if provider.strip() in index_name  :
+                df = _retrieve_index_content(es, index_name, provider, limit, dependencies_dict)
+                if not df.empty:
+                    log.getLogger().debug("Retrieved " + index_name + ": row count " + str(df.shape))
+                    count = count + df.shape[0]
+                    df_per_space_list.append(df)
+
+    if len(df_per_space_list) > 0:
+        complete_corpus_df = pd.concat(df_per_space_list, ignore_index=True)
+        if True == _dev_bool(dependencies_dict):
+            complete_corpus_df = complete_corpus_df.head(limit)
+            #log.getLogger().info("\n\nExtraction Complete. Document count = " + str(complete_corpus_df[:5]))
+        log.getLogger().info("complete_corpus_df shape: " + str(complete_corpus_df.shape))
+        dfu.col_names(df,"complete_corpus_df")
+        msg = "\n\n>>>>>>>>>>>>>>   Entering Pipeline For  " + str(providers) + ">>>>>>>>>>\n\n"
+        log.getLogger().info(msg)
+        analysis_dict = {}
+        analysis_dict["provider"] = str(providers)
+        _enter_pipeline(merm_model.PipelinePackage(None, complete_corpus_df, None, provider, analysis_dict,{}, dependencies_dict), pipe)
 
 
 def _extract_from_one_provider(es, provider, pipe, dependencies_dict:Dict):
@@ -105,19 +150,51 @@ def _generate_query(dependencies_dict:Dict):
                 'match_all': {}
             }
         }
-    else:
+    elif query_type == "field_query":
         query_field = dependencies_dict["env"].config["extract_instructions"]["query_field"]
         query_value = dependencies_dict["env"].config["extract_instructions"]["query_value"]
+        query_exclude_field = dependencies_dict["env"].config["extract_instructions"]["query_exclude_field"]
+        query_exclude_value = dependencies_dict["env"].config["extract_instructions"]["query_exclude_value"]
         log.getLogger().info("Searching " + query_field + " for " + query_value)
-
-
-        return {
-            'query': {
-                'match': {
-                    query_field : query_value
+        if query_exclude_field:
+            return {
+                "query": {
+                    "bool": {
+                        "must": {
+                            "match": {
+                                query_field: query_value
+                            }
+                        },
+                        "must_not": {
+                            "wildcard": {
+                                query_exclude_field: query_exclude_value
+                            }
+                        }
+                    }
                 }
             }
-        }
+        else:
+            return {
+                'query': {
+                    'match': {
+                        query_field : query_value
+                    }
+                }
+            }
+    elif query_type == "exclusion_only":
+        query_exclude_field = dependencies_dict["env"].config["extract_instructions"]["query_exclude_field"]
+        query_exclude_value = dependencies_dict["env"].config["extract_instructions"]["query_exclude_value"]
+        return {
+                "query": {
+                    "bool": {
+                        "must_not": {
+                            "wildcard": {
+                                query_exclude_field: query_exclude_value
+                            }
+                        }
+                    }
+                }
+            }
 
 
 
@@ -166,6 +243,8 @@ def _process_row(content,provider):
         return _process_text_rank_row(content)
     elif provider == "corpus_lda":
         return _process_lda_row(content)
+    elif provider == "corpus_rake":
+        return _process_rake_row(content)
     else:
         raise Exception("Unknown Provider " + provider)
 
@@ -258,6 +337,17 @@ def _process_lda_row(content):
         "sentence": content['_source']['sentence'],
         "id": content['_id'],
         "analysis_type": content['_source']['analysis_type'],
+        "created": content['_source']['created'],
+        "src": content['_source']['src'],
+    }
+    return row
+
+def _process_rake_row(content):
+    row = {
+        "category": content['_source']['category'],
+        "sentence": content['_source']['sentence'],
+        "id": content['_id'],
+        "score": content['_source']['score'],
         "created": content['_source']['created'],
         "src": content['_source']['src'],
     }

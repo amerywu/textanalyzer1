@@ -55,10 +55,11 @@ _text_rank = [
 
 _category_prediction = [
     (10, "DataframeToListOfLists"),
+    (11, "RemoveDuplicateDocs"),
     (12, "MergeCategories1"),
     (14, "CountBySpaceAndGroup"),
     (15, "ExcludeByGroup"),
-    (20, "ExcludeBySpace"),
+   # (20, "ExcludeBySpace"),
     (30, "CountBySpaceAndGroup"),
     (40, "EvenByGroup"),
     (45, "CountBySpaceAndGroup"),
@@ -143,7 +144,7 @@ def run_pipeline(package:merm_model.PipelinePackage):
     for step_tuple in pipeline_steps:
         if env.continue_run() == True:
             package = factory.next_step(step_tuple[1], package)
-            log_string = log_string + "\n\n" + package.stage_log()
+            log_string = log_string + "\n\n------------\n\n" + step_tuple[1]+ "\n\n"+package.stage_log()
         else:
             log.getLogger().warning("Continue run is FALSE")
 

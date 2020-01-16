@@ -21,4 +21,3 @@ class PipelineFactory:
         else:
             log.getLogger().warning("The return type is not of type PipelinePackage. THIS IS BAD PRACTICE :(")
         return result
-

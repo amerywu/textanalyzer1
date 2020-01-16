@@ -23,6 +23,7 @@ class GroupByESIndex:
         else:
             linked_doc_by_index = self._group_all_groups(package)
 
+
         new_package = merm_model.PipelinePackage(package.model, package.corpus, package.dict, linked_doc_by_index,
                                                  package.any_analysis, package.any_inputs_dict,
                                                  package.dependencies_dict)
@@ -190,7 +191,7 @@ class ExcludeByGroup:
                                                  package.dependencies_dict)
 
         new_package.log_stage(
-            "\nInclude filter was: " + str(include_list) + "\nExclude filter was:" + str(exclude_list) + "Remaining documents count: " + str(
+            "\nInclude filter was: " + str(include_list) + "\nExclude filter was:" + str(exclude_list) + "\nRemaining documents count: " + str(
                 len(new_linked_doc_list)))
         return new_package
 
@@ -271,12 +272,20 @@ class EvenBySpace:
         category_count_list = list(categories_dict.values())
         current_category_count = {}
 
+        env = package.dependencies_dict["env"]
+        dynamic_threshold = env.config.getboolean("job_instructions", "filter_category_threshold_type_dynamic")
+        median = stats.median(category_count_list)
 
-        average = stats.mean(category_count_list)
-
-
-        min_threshold = average * 0.3
-        max_threshold = average * 1.1
+        if dynamic_threshold == True:
+            min = env.config.getfloat("job_instructions","filter_category_min_threshold_dynamic")
+            max = env.config.getfloat("job_instructions", "filter_category_max_threshold_dynamic")
+            min_threshold = median * min
+            max_threshold = median * max
+        else:
+            min = env.config.getint("job_instructions", "filter_category_min_threshold")
+            max = env.config.getint("job_instructions", "filter_category_max_threshold")
+            min_threshold = min
+            max_threshold = max
         shuffle(package.linked_document_list)
 
         new_doc_list = []
@@ -310,13 +319,25 @@ class EvenByGroup:
         group_dict = package.any_inputs_dict["Sample_By_Group"]
         group_count_list = list(group_dict.values())
         current_category_count = {}
+        env = package.dependencies_dict["env"]
+        dynamic_threshold = env.config.getboolean("job_instructions", "filter_groupby_threshold_type_dynamic")
 
 
         median = stats.median(group_count_list)
 
 
-        min_threshold = median * 0.5
-        max_threshold = median * 0.9
+        if dynamic_threshold == True:
+            min = env.config.getfloat("job_instructions","filter_groupby_min_threshold_dynamic")
+            max = env.config.getfloat("job_instructions", "filter_groupby_max_threshold_dynamic")
+            min_threshold = median * min
+            max_threshold = median * max
+        else:
+            min = env.config.getint("job_instructions", "filter_groupby_min_threshold")
+            max = env.config.getint("job_instructions", "filter_groupby_max_threshold")
+            min_threshold = min
+            max_threshold = max
+
+
         shuffle(package.linked_document_list)
 
         new_doc_list = []
@@ -344,5 +365,22 @@ class EvenByGroup:
         return package
 
 
+class RemoveDuplicateDocs:
+    def __init__(self):
+        pass
+
+    def perform(self, package: merm_model.PipelinePackage):
+
+        original_count = len(package.linked_document_list)
+        filter_dict = {}
+        for linked_doc in package.linked_document_list:
+            filter_dict[linked_doc.raw] = linked_doc
+
+        doc_list = list(filter_dict.values())
+        package.linked_document_list = doc_list
+
+        package.log_stage("Before removing duplicates:  " + str(original_count) +"\nAfter removing duplicates: " + str(len(package.linked_document_list)))
+
+        return package
 
 

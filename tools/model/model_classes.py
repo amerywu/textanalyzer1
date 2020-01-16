@@ -197,7 +197,7 @@ class PipelinePackage:
             self.linked_document_list = []
 
     def log_stage(self, log):
-        print(log)
+        self.dependencies_dict["log"].getLogger().info(log)
         self.any_analysis_dict["stage_log"] = log
 
     def stage_log(self):

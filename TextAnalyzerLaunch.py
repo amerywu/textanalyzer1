@@ -24,7 +24,11 @@ def initiate_run():
         dependencies_dict["utils"] = utils
         dependencies_dict["dfutils"] = dfutils
         dependencies_dict["colutils"] = colutils
+        dependencies_dict["log"] = log
 
+        log.getLogger().info("Dependencies: ")
+        for k, v in dependencies_dict.items():
+            log.getLogger().info(str(k) + " : " + str(v))
         while continue_run == True:
             es_extract.initiate_extraction(pipeline.run_pipeline, dependencies_dict)
             continue_run = env.continue_run()

@@ -65,6 +65,7 @@ class PipelineManifest:
         "TextCleaner_DF": tools.text_pipeline.text_cleaner.TextCleaner_Df_Corpus(),
         "Lemmatize_Corpus_LinkedDocs" : tools.text_pipeline.text_cleaner.Lemmatize_Corpus_LinkedDocs(),
         "TextRank": tools.text_pipeline.text_rank.TextRank(),
+        "RemoveDuplicateDocs" : tools.text_pipeline.document_filter.RemoveDuplicateDocs(),
         "LinkedDocCorpusWordCount": tools.text_pipeline.word_count.LinkedDocCorpusWordCount(),
         "LinkedDocCorpusStopWordGenerator" : tools.text_pipeline.word_count.LinkedDocCorpusStopWordGenerator(),
         "TextRankResultsToLinkedDocList" : tools.text_pipeline.analysis_to_linkeddocs_conversion.TextRankResultsToLinkedDocList(),
