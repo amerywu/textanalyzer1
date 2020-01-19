@@ -1,6 +1,6 @@
 import tools.pipeline_framework.post_process_factory as post_process
 import tools.model.model_classes as merm_model
-
+from datetime import datetime
 import tools.utils.envutils as env
 import tools.utils.log as log
 
@@ -45,7 +45,7 @@ _text_rank = [
     (30, "TextRankGrouped_SubPipe"),
     (40, "GensimLdaGrouped_SubPipe"),
     (50, "TextRankResultsToLinkedDocList"),
-    (60, "GensimLdaGrouped_SubPipe")  ,
+    (60, "GensimLdaGrouped_SubPipe"),
     (63, "RakeResultsToLinkedDocList"),
     (65, "GensimLdaGrouped_SubPipe"),
     (67, "NounPhraseResultsToLinkedDocList"),
@@ -65,6 +65,8 @@ _category_prediction = [
     (45, "CountBySpaceAndGroup"),
     (50, "LinkedDocListToScikitRFCorpus"),
     (60, "ScikitRF"),
+    (65, "ScikitRFNearMisses"),
+    (70, "ScikitRFSentenceFinder"),
 
     ]
 
@@ -125,7 +127,9 @@ def run_pipeline(package:merm_model.PipelinePackage):
     provider = env.config["extract_instructions"]["provider"]
     pipeline_name = env.config["pipeline_instructions"]["pipeline_name"]
     queryvalue = env.config["extract_instructions"]["query_value"]
-    file_name = provider + "_" + pipeline_name + "_" + queryvalue + ".txt"
+    dt = datetime.now()
+    suffix = str(dt.microsecond)[-4:]
+    file_name = provider + "_" + pipeline_name + "_" + queryvalue + "_" + suffix +".txt"
 
 
     log_string = ""
@@ -147,6 +151,7 @@ def run_pipeline(package:merm_model.PipelinePackage):
             log_string = log_string + "\n\n------------\n\n" + step_tuple[1]+ "\n\n"+package.stage_log()
         else:
             log.getLogger().warning("Continue run is FALSE")
+
 
     env.overwrite_file(report_dir + "/" + file_name, log_string)
     log.getLogger().info("------- PIPELINE COMPLETED -------")

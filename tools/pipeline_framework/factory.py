@@ -45,6 +45,8 @@ class PipelineManifest:
         "MergeCategories1" : tools.text_pipeline.pipeline_utils.MergeCategories1(),
         "ScikitLDA": tools.text_pipeline.sklearn_latent_dirichlet_allocation.ScikitLDA(),
         "ScikitRF": tools.text_pipeline.sklearn_random_forest.ScikitRF(),
+        "ScikitRFSentenceFinder" : tools.text_pipeline.sklearn_random_forest.ScikitRFSentenceFinder(),
+        "ScikitRFNearMisses" : tools.text_pipeline.sklearn_random_forest.ScikitRFNearMisses(),
         "SciKitLDAReport":tools.text_pipeline.sklearn_latent_dirichlet_allocation.SciKitLDAReport(),
         "LinkedDocListToScikitLDACorpus": tools.text_pipeline.sklearn_corpora_builder.LinkedDocListToScikitLDACorpus(),
         "LinkedDocListToScikitRFCorpus" : tools.text_pipeline.sklearn_corpora_builder.LinkedDocListToScikitRFCorpus(),

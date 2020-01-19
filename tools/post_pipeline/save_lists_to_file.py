@@ -4,7 +4,6 @@ import tools.utils.log as log
 import tools.utils.envutils as env
 from datetime import datetime
 
-
 def run_post_process(package: merm_model.PipelinePackage):
     log.getLogger().info("save dictionaries to file")
     path = env.config["job_instructions"]["output_folder"]
@@ -14,8 +13,9 @@ def run_post_process(package: merm_model.PipelinePackage):
     for key in package.any_analysis_dict:
 
         analysis = package.any_analysis_dict[key]
-        if "ict" in  type(analysis).__name__:
-            file_name = path +"/"+key+"_"+suffix+".csv"
-            with open(file_name, 'w') as f:
-                for k in analysis.keys():
-                    f.write("%s,%s\n" % (k, analysis[k]))
+        if  type(analysis) is list:
+            if type(analysis[0]) is list:
+                file_name = path +"/"+key+"_" + suffix+".csv"
+                with open(file_name, "w", newline="") as f:
+                    writer = csv.writer(f)
+                    writer.writerows(analysis)
