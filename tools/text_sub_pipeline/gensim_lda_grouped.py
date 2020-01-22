@@ -34,9 +34,9 @@ class GensimLdaGrouped_SubPipe:
         mfst = package.dependencies_dict["factory"].PipelineManifest.manifest
 
         #breaks corpus into subsets
-        grouped_doc_package = mfst["GroupByESIndex"].perform(package)
+        grouped_doc_package = mfst["SubsetData"].perform(package)
         if ("ackage" in type(grouped_doc_package).__name__):
-            log.getLogger().info("STRUCTURE after GroupByESIndex:"  + grouped_doc_package.structure())
+            log.getLogger().info("STRUCTURE after SubsetData:"  + grouped_doc_package.structure())
         else:
             log.getLogger().warning("The return type is not of type PipelinePackage. THIS IS BAD PRACTICE :(")
         log_string = "\n\n_______________________\nPerforming LDA on subsets\n"

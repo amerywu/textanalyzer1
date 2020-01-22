@@ -61,7 +61,7 @@ _category_prediction = [
     (15, "ExcludeByGroup"),
    # (20, "ExcludeBySpace"),
     (30, "CountBySpaceAndGroup"),
-    (40, "EvenBySpace"),
+    (40, "StopWord_SubPipe"),
     (45, "CountBySpaceAndGroup"),
     (50, "LinkedDocListToScikitRFCorpus"),
     (60, "ScikitRF"),
@@ -80,8 +80,7 @@ _category_prediction_ld = [
     #(15, "ExcludeByGroup"),
     (20, "ExcludeBySpace"),
     (30, "CountBySpaceAndGroup"),
-    (40, "EvenBySpace"),
-    (43, "StopWordRemoval"),
+    (40, "StopWord_SubPipe"),
     (45, "CountBySpaceAndGroup"),
     # (50, "LinkedDocListToScikitRFCorpus"),
     # (80, "ScikitLinearDiscriminantAnalysis"),
@@ -89,8 +88,6 @@ _category_prediction_ld = [
     # (90, "ScikitSentenceFinder"),
     # (95, "ScikitPrettyConfusion"),
     # (100, "Reset"),
-    (110, "LinkedDocCorpusStopWordGenerator"),
-    (116, "StopWordRemoval"),
     (120, "TokensToDoc"),
     (145, "CountBySpaceAndGroup"),
     (150, "LinkedDocListToScikitRFCorpus"),
@@ -162,6 +159,7 @@ def step_through(package:merm_model.PipelinePackage, pipeline_steps, log_string)
             log_string = log_string + "\n\n------------\n\n" + step_tuple[1]+ "\n\n"+package.stage_log()
         else:
             log.getLogger().warning("Continue run is FALSE")
+        package.log_stage(log_string)
     return package
 
 
@@ -195,11 +193,11 @@ def run_pipeline(package:merm_model.PipelinePackage):
         current_loop = package.any_inputs_dict["current_loop"]
         while current_loop < package.any_inputs_dict["loop_count"]:
             current_loop = package.any_inputs_dict["current_loop"]
-            package = step_through(package, pipeline_steps, log_string)
+            package = step_through(package, pipeline_steps, package.stage_log())
 
 
 
-    env.overwrite_file(report_dir + "/" + file_name, log_string)
+    env.overwrite_file(report_dir + "/" + file_name, package.stage_log())
     log.getLogger().info("------- PIPELINE COMPLETED -------")
 
     # Post pipeline; This is where the data is no longer changing. Rather, the data is ready

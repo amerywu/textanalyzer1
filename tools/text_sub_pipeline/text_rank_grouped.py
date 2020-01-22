@@ -14,9 +14,9 @@ class TextRankGrouped_SubPipe:
         mfst = package.dependencies_dict["factory"].PipelineManifest.manifest
 
         #breaks corpus into subsets
-        grouped_doc_package = mfst["GroupByESIndex"].perform(package)
+        grouped_doc_package = mfst["SubsetData"].perform(package)
         if ("ackage" in type(grouped_doc_package).__name__):
-            log.getLogger().info("STRUCTURE after GroupByESIndex:"  + grouped_doc_package.structure())
+            log.getLogger().info("STRUCTURE after SubsetData:"  + grouped_doc_package.structure())
         else:
             log.getLogger().warning("The return type is not of type PipelinePackage. THIS IS BAD PRACTICE :(")
 
@@ -66,7 +66,6 @@ class TextRankGrouped_SubPipe:
                         manifest,
                         doc_list):
 
-
         log.getLogger().info("Subset: " + str(sub_corpus_name))
         log.getLogger().info(":TextRank: ")
         log_string = "\n\n\n++++++++++++++++++++++++++++++\nSubset: " + str(sub_corpus_name)
@@ -76,7 +75,6 @@ class TextRankGrouped_SubPipe:
 
         package_one_group = manifest["TextRank"].perform(package_one_group)
         log_string = log_string + "\n\n" + package_one_group.stage_log()
-
 
         log.getLogger().info(":LinkedDocCorpusStopWordGenerator: ")
         package_one_group = manifest["LinkedDocCorpusStopWordGenerator"].perform(package_one_group)
@@ -113,7 +111,6 @@ class TextRankGrouped_SubPipe:
         package_one_group = manifest["PartOfSpeechAnalyzerFromTextRank"].perform(package_one_group)
         log_string = log_string + "\n\n" + package_one_group.stage_log()
         package_one_group.log_stage(log_string)
-
 
         return package_one_group
 

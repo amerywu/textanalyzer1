@@ -3,26 +3,42 @@ import tools.utils.log as log
 import statistics as stats
 from random import shuffle
 
-class GroupByESIndex:
+class SubsetData:
 
     def __init__(self):
         pass
 
-    def perform(self, package: merm_model.PipelinePackage):
-        thetype = type(package.linked_document_list)
-        if thetype is dict:
-            return package
-
-        linked_doc_by_index = {}
+    def _by_group(self, package):
         group_testenv = package.dependencies_dict["env"].config.getboolean("pipeline_instructions", "group_testenv")
         if True == group_testenv:
             relevant_groups_string = package.dependencies_dict["env"].config["pipeline_instructions"][
                 "group_testenv_list"]
             relevant_groups_list = relevant_groups_string.split(",")
-            linked_doc_by_index = self._group_test_groups(package, relevant_groups_list)
+            return self._group_test_groups(package, relevant_groups_list)
         else:
-            linked_doc_by_index = self._group_all_groups(package)
+            return self._group_all_groups(package)
 
+    def _by_space(self, package):
+        group_testenv = package.dependencies_dict["env"].config.getboolean("pipeline_instructions", "group_testenv")
+        if True == group_testenv:
+            relevant_groups_string = package.dependencies_dict["env"].config["pipeline_instructions"][
+                "group_testenv_list"]
+            relevant_groups_list = relevant_groups_string.split(",")
+            return self._group_test_spaces(package, relevant_groups_list)
+        else:
+            return self._group_all_spaces(package)
+
+    def perform(self, package: merm_model.PipelinePackage):
+        thetype = type(package.linked_document_list)
+        if thetype is dict:
+            return package
+        env = package.dependencies_dict["env"]
+        by_space = env.config.getboolean("ml_instructions", "subset_by_space")
+
+        if by_space == True:
+            linked_doc_by_index = self._by_space(package)
+        else:
+            linked_doc_by_index = self._by_group(package)
 
         new_package = merm_model.PipelinePackage(package.model, package.corpus, package.dict, linked_doc_by_index,
                                                  package.any_analysis, package.any_inputs_dict,
@@ -57,6 +73,36 @@ class GroupByESIndex:
                     groupby_list = []
                     groupby_list.append(linked_doc)
                     linked_doc_by_index[linked_doc.groupedBy] = groupby_list
+
+        return linked_doc_by_index
+
+
+    def _group_all_spaces(self, package):
+        linked_doc_by_index = {}
+        for linked_doc in package.linked_document_list:
+
+            if linked_doc.space in linked_doc_by_index:
+                linked_doc_by_index[linked_doc.space].append(linked_doc)
+            else:
+                space_list = []
+                space_list.append(linked_doc)
+                linked_doc_by_index[linked_doc.space] = space_list
+
+        return linked_doc_by_index
+
+
+    def _group_test_spaces(self, package, relevant_groups_list):
+        linked_doc_by_index = {}
+        for linked_doc in package.linked_document_list:
+
+            if linked_doc.space in relevant_groups_list:
+
+                if linked_doc.space in linked_doc_by_index:
+                    linked_doc_by_index[linked_doc.space].append(linked_doc)
+                else:
+                    space_list = []
+                    space_list.append(linked_doc)
+                    linked_doc_by_index[linked_doc.space] = space_list
 
         return linked_doc_by_index
 
