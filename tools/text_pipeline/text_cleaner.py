@@ -99,3 +99,15 @@ class Lemmatize_Corpus_LinkedDocs:
         return package
 
 
+class TokensToDoc:
+    def __init__(self):
+        pass
+
+    def perform(self, package: merm_model.PipelinePackage):
+
+        for linked_doc in package.linked_document_list:
+            new_sentence = ""
+            for token in linked_doc.tokens:
+                new_sentence = new_sentence + token + " "
+            linked_doc.raw = new_sentence
+        return package

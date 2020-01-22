@@ -75,10 +75,10 @@ class LinkedDocListToScikitRFCorpus:
         matrix = vectorizer.fit_transform(corpus)
         feature_names = vectorizer.get_feature_names()
 
-        package.any_inputs_dict["RFX"] = matrix
-        package.any_inputs_dict["RFY"] = numeric_class
-        package.any_inputs_dict["RFdict"] = feature_names
-        package.any_inputs_dict["RFcategories"] = classes
+        package.any_inputs_dict["SKX"] = matrix
+        package.any_inputs_dict["SKY"] = numeric_class
+        package.any_inputs_dict["SKdict"] = feature_names
+        package.any_inputs_dict["SKcategories"] = classes
 
 
 
@@ -92,14 +92,14 @@ class LinkedDocListToScikitRFCorpus:
     def class_log(self, classes):
         class_string = "\n"
         for key, count in classes.items():
-            class_string = class_string + key + "\t" + str(count) + "\n"
+            class_string = class_string + str(key) + "\t" + str(count) + "\n"
         return class_string
 
     def groupby_log(self, groupby_count):
 
         groupby_string = "\n"
         for group, cnt in groupby_count.items():
-            groupby_string = groupby_string + group + "\t" + str(cnt) + "\n"
+            groupby_string = groupby_string + str(group) + "\t" + str(cnt) + "\n"
         return groupby_string
 
 

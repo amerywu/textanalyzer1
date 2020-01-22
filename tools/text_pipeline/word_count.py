@@ -99,7 +99,7 @@ class LinkedDocCorpusStopWordGenerator:
         self.save_to_file(stop_words,package)
         package.log_stage("Generated stop words. \nGlobal stop word count: " + str(len(stop_words_global)) + "\nHigh frequency dynamically generated stop words: " + \
                           str(len(stop_words_top)) + "\nLow frequency dynamically generated stop words: " + str(len(stop_words_bottom)) +"\nMax Frequency at bottom: " + str(max_freq_at_bottom) + \
-                          "\nLowest Frequency removed at top: " + str(lowest_freq_at_top))
+                          "\nLowest Frequency removed at top: " + str(lowest_freq_at_top) + "\nOriginal word unique count is " + str(self._word_count(package)))
         return package
 
     def save_to_file(self, stop_words_new, package):
@@ -151,6 +151,11 @@ class LinkedDocCorpusStopWordGenerator:
                     lowest_freq = freq
 
         return (stop_words, lowest_freq)
+
+
+    def _word_count(self, package):
+        corpus_word_count = package.any_analysis_dict["corpus_word_count"]
+        return sum(list(corpus_word_count.values()))
 
     def _bottom_threshold(self, package:merm_model.PipelinePackage):
         corpus_word_count = package.any_analysis_dict["corpus_word_count"]

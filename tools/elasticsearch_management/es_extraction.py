@@ -27,44 +27,35 @@ def _dev_limit(dependencies_dict:Dict):
 # Retrieves space names from ES metadata index. Iteratating by space, retrieves all documents in each space.
 # Each space retrieval involves a single Pandas dataframe. These are then concatenated into a single DataFrame for
 # starting the pipeline
-def _extract(es, pipe, dependencies_dict:Dict):
+def _extract(es,  package):
 
-    provider = dependencies_dict["env"].config["extract_instructions"]["provider"]
+    provider = package.dependencies_dict["env"].config["extract_instructions"]["provider"]
+    package.any_inputs_dict["corpus_name"] = provider
     msg = "\n\n\n================\nExtracting from " + str(provider)
     log.getLogger().warning(msg)
-    if provider == "all":
-        _extract_from_all_providers(es, pipe, dependencies_dict)
-    elif provider == "none":
-        _enter_pipeline(
-            merm_model.PipelinePackage(None, None, None, None, {}, {}, dependencies_dict), pipe)
+
+    if provider == "none":
+        return package
     elif "," in provider:
         provider_list = provider.split(",")
-        _extract_from_providers_merge(es,provider_list,pipe,dependencies_dict)
+
+        return _extract_from_providers_merge(es,provider_list,package)
 
     else:
-        _extract_from_one_provider(es, provider, pipe, dependencies_dict)
+       return  _extract_from_one_provider(es, provider, package)
 
 
-def _enter_pipeline(package:merm_model.PipelinePackage, pipe):
-    pipe(package)
 
 
-def _extract_from_all_providers(es, pipe, dependencies_dict):
-    providers=dependencies_dict["env"].config["extract_instructions"]["all_providers"]
-    providers_list = providers.split(",")
-    log.getLogger().debug("Extracting from all providers: " + str(providers_list))
-    for provider in providers_list:
-        _extract_from_one_provider(es,provider, pipe, dependencies_dict)
 
-
-def _extract_from_providers_merge(es, providers, pipe, dependencies_dict:Dict):
+def _extract_from_providers_merge(es, providers, package:merm_model.PipelinePackage):
     msg = "\n\n-------------------------\nPROVIDERS: " + str(providers) + "\n---------------------\n\n"
     log.getLogger().warning(msg)
-    ignore_indices = dependencies_dict["env"].config["extract_instructions"]["ignore_indices"]
+    ignore_indices = package.dependencies_dict["env"].config["extract_instructions"]["ignore_indices"]
     ignore_indices_list = ignore_indices.split(",")
     indices = es_conn.retrieve_index_registry()
 
-    limit = _dev_limit(dependencies_dict)
+    limit = _dev_limit(package.dependencies_dict)
     count = 0
 
     df_per_space_list: List[DataFrame] = []
@@ -78,7 +69,7 @@ def _extract_from_providers_merge(es, providers, pipe, dependencies_dict:Dict):
             if count > limit:
                 break
             if provider.strip() in index_name  :
-                df = _retrieve_index_content(es, index_name, provider, limit, dependencies_dict)
+                df = _retrieve_index_content(es, index_name, provider, limit, package.dependencies_dict)
                 if not df.empty:
                     log.getLogger().debug("Retrieved " + index_name + ": row count " + str(df.shape))
                     count = count + df.shape[0]
@@ -86,7 +77,7 @@ def _extract_from_providers_merge(es, providers, pipe, dependencies_dict:Dict):
 
     if len(df_per_space_list) > 0:
         complete_corpus_df = pd.concat(df_per_space_list, ignore_index=True)
-        if True == _dev_bool(dependencies_dict):
+        if True == _dev_bool(package.dependencies_dict):
             complete_corpus_df = complete_corpus_df.head(limit)
             #log.getLogger().info("\n\nExtraction Complete. Document count = " + str(complete_corpus_df[:5]))
         log.getLogger().info("complete_corpus_df shape: " + str(complete_corpus_df.shape))
@@ -95,29 +86,31 @@ def _extract_from_providers_merge(es, providers, pipe, dependencies_dict:Dict):
         log.getLogger().info(msg)
         analysis_dict = {}
         analysis_dict["provider"] = str(providers)
-        _enter_pipeline(merm_model.PipelinePackage(None, complete_corpus_df, None, provider, analysis_dict,{}, dependencies_dict), pipe)
+        package.any_analysis_dict = analysis_dict
+        package.corpus = complete_corpus_df
+        return package
 
 
-def _extract_from_one_provider(es, provider, pipe, dependencies_dict:Dict):
+def _extract_from_one_provider(es, provider, package:merm_model.PipelinePackage):
     msg = "\n\n-------------------------\nPROVIDER: " + str(provider) + "\n---------------------\n\n"
     log.getLogger().warning(msg)
-    ignore_indices = dependencies_dict["env"].config["extract_instructions"]["ignore_indices"]
+    ignore_indices = package.dependencies_dict["env"].config["extract_instructions"]["ignore_indices"]
     ignore_indices_list = ignore_indices.split(",")
     indices = es_conn.retrieve_index_registry()
 
-    limit = _dev_limit(dependencies_dict)
+    limit = _dev_limit(package.dependencies_dict)
     count = 0
 
     df_per_space_list: List[DataFrame] = []
     for index_name in indices:
-        if "@" in index_name:
+        if "@" in index_name or index_name.startswith("."):
             continue
         if index_name in ignore_indices_list:
             continue
         if count > limit:
             break
         if provider.strip() in index_name  :
-            df = _retrieve_index_content(es, index_name, provider, limit, dependencies_dict)
+            df = _retrieve_index_content(es, index_name, provider, limit, package.dependencies_dict)
             if not df.empty:
                 log.getLogger().debug("Retrieved " + index_name + ": row count " + str(df.shape))
                 count = count + df.shape[0]
@@ -125,7 +118,7 @@ def _extract_from_one_provider(es, provider, pipe, dependencies_dict:Dict):
 
     if len(df_per_space_list) > 0:
         complete_corpus_df = pd.concat(df_per_space_list, ignore_index=True)
-        if True == _dev_bool(dependencies_dict):
+        if True == _dev_bool(package.dependencies_dict):
             complete_corpus_df = complete_corpus_df.head(limit)
         #log.getLogger().info("\n\nExtraction Complete. Document count = " + str(complete_corpus_df[:5]))
         log.getLogger().info("complete_corpus_df shape: " + str(complete_corpus_df.shape))
@@ -134,12 +127,15 @@ def _extract_from_one_provider(es, provider, pipe, dependencies_dict:Dict):
         log.getLogger().info(msg)
         analysis_dict = {}
         analysis_dict["provider"] = provider
-        _enter_pipeline(merm_model.PipelinePackage(None, complete_corpus_df, None, provider, analysis_dict,{}, dependencies_dict), pipe)
+        package.corpus = complete_corpus_df
+        package.any_analysis_dict = analysis_dict
+        return package
+
 
 #Starting point for extraction purpose (pass pipeline in as function to avoid mutually dependent import statements)
-def initiate_extraction(pipe, dependencies_dict):
+def initiate_extraction(es_conn, package):
     es = es_conn.connectToES()
-    return _extract(es, pipe, dependencies_dict)
+    return _extract(es, package)
 
 
 def _generate_query(dependencies_dict:Dict):

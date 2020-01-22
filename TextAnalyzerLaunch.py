@@ -8,6 +8,8 @@ import tools.pipeline_framework.pipeline as pipeline
 import tools.utils.text_parsing_utils as utils
 import tools.utils.dfutils as dfutils
 import tools.utils.collectionutils as colutils
+import tools.model.model_classes as merm_model
+import tools.elasticsearch_management.es_connect as es_conn
 
 def initiate_run():
     try:
@@ -25,12 +27,16 @@ def initiate_run():
         dependencies_dict["dfutils"] = dfutils
         dependencies_dict["colutils"] = colutils
         dependencies_dict["log"] = log
+        dependencies_dict["es_conn"] = es_conn
 
         log.getLogger().info("Dependencies: ")
         for k, v in dependencies_dict.items():
             log.getLogger().info(str(k) + " : " + str(v))
         while continue_run == True:
-            es_extract.initiate_extraction(pipeline.run_pipeline, dependencies_dict)
+            package = merm_model.PipelinePackage(None, None, None, None, {}, {}, dependencies_dict)
+            package.any_analysis_dict["stage_log"] = ""
+            pipeline.run_pipeline(package)
+
             continue_run = env.continue_run()
             if(not env.run_forever()):
                 break

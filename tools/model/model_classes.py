@@ -27,6 +27,17 @@ def _typeOrNone(obj):
 
 
 
+def category_group_tuple(provider):
+    if "job" in provider:
+        return ("majorFinal", "majorFinal")
+    elif "corpus_text_rank" in provider:
+        return("category", "rank")
+    elif "corpus_lda" in provider:
+        return("analysis_type", "category")
+    else:
+        return None
+
+
 def linked_document_from_dict(dict, provider):
 
     if "job" in provider:
@@ -195,6 +206,14 @@ class PipelinePackage:
                 cached_linked_docs[key] = cached_docs_list
             self.cache_dict["linked_docs"] = cached_linked_docs
             self.linked_document_list = []
+
+
+    def uncache_linked_docs(self):
+        if "linked_docs" in self.cache_dict.keys() and len(self.cache_dict["linked_docs"]) > 0:
+            self.linked_document_list = self.cache_dict["linked_docs"]
+            self.cache_dict["linked_docs"] = []
+
+
 
     def log_stage(self, log):
         self.dependencies_dict["log"].getLogger().info(log)

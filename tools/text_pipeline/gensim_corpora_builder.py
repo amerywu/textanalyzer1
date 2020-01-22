@@ -51,7 +51,8 @@ class DataframeToListOfLists:
         tokenized_linked_docs = package.dependencies_dict["utils"].tokenize(corpora_list)
         #merm_tools_linkeddocument_list =package.dependencies_dict["utils"].lemmatize_tokens(token_list, package.dependencies_dict["utils"].standard_stop_words())
         package = data_models.PipelinePackage(None, None, None, tokenized_linked_docs, package.any_analysis_dict, package.any_inputs_dict, package.dependencies_dict)
-        package.log_stage("Converted a pandas dataframe into our own document list format. \nDocument count is " + str(len(tokenized_linked_docs)))
+        category_group_tuple = data_models.category_group_tuple(package.any_analysis_dict["provider"])
+        package.log_stage("Converted a pandas dataframe into our own document list format. \nDocument count is " + str(len(tokenized_linked_docs))+ ".\n Category is " + category_group_tuple[0] + "\n GroupBy " + category_group_tuple[1])
         return package
 
     def _dfToList(self, package:data_models.PipelinePackage):

@@ -64,18 +64,24 @@ class GroupByESIndex:
 class StopWordRemoval:
 
     def __init__(self):
-        self.stop_words_key = "stop_words"
         pass
 
+    def _stop_word_key(self, package):
+        colutils = package.dependencies_dict["colutils"]
+        key = colutils.get_top_incrementing_key("stop_words", package.any_analysis_dict)
+        return key
+
     def perform(self, package: merm_model.PipelinePackage):
+
 
         log.getLogger().info("StopWordRemoval")
         stop_words = []
         load_source = ""
-        if self.stop_words_key in package.any_analysis_dict:
+        if self._stop_word_key(package) in package.any_analysis_dict:
             log.getLogger().info("Stop words retrieved from package analyses.")
             log.getLogger().debug("It's a list")
-            stop_words = package.any_analysis_dict[self.stop_words_key]
+            stop_words = package.any_analysis_dict[self._stop_word_key(package)]
+
             load_source = " from previous pipeline process."
 
         else:
@@ -101,7 +107,7 @@ class StopWordRemoval:
             linked_doc.tokens = new_tokens
 
         package.log_stage(
-            "Removed all stop words from the corpus tokens (i.e., bag of words). The stop words were loaded " + load_source)
+            "Removed all stop words from the corpus tokens (i.e., bag of words). The stop words were loaded " + load_source +"\nStop word count is " + str(len(stop_words)))
         return package
 
 
@@ -269,6 +275,8 @@ class EvenBySpace:
 
     def perform(self, package: merm_model.PipelinePackage):
         categories_dict = package.any_inputs_dict["Sample_By_Space"]
+        package.uncache_linked_docs()
+        linked_docs = package.linked_document_list.copy()
         category_count_list = list(categories_dict.values())
         current_category_count = {}
 
@@ -289,7 +297,7 @@ class EvenBySpace:
         shuffle(package.linked_document_list)
 
         new_doc_list = []
-        for linked_doc in package.linked_document_list:
+        for linked_doc in linked_docs:
 
             if categories_dict[linked_doc.space] < min_threshold:
                 #package.linked_document_list.remove(linked_doc)
@@ -307,6 +315,8 @@ class EvenBySpace:
                     new_doc_list.append(linked_doc)
             else:
                 new_doc_list.append(linked_doc)
+
+        package.cache_linked_docs()
         package.linked_document_list = new_doc_list
         package.log_stage("Removed categories with fewer than " + str(min_threshold) + " rows in category.\nReduced rows for categories with more than " + str(max_threshold) + " rows in category.")
         return package
@@ -320,6 +330,9 @@ class EvenByGroup:
         group_count_list = list(group_dict.values())
         current_category_count = {}
         env = package.dependencies_dict["env"]
+
+        package.uncache_linked_docs()
+        linked_docs = package.linked_document_list.copy()
         dynamic_threshold = env.config.getboolean("job_instructions", "filter_groupby_threshold_type_dynamic")
 
 
@@ -338,10 +351,10 @@ class EvenByGroup:
             max_threshold = max
 
 
-        shuffle(package.linked_document_list)
+        shuffle(linked_docs)
 
         new_doc_list = []
-        for linked_doc in package.linked_document_list:
+        for linked_doc in linked_docs:
 
             if group_dict[linked_doc.groupedBy] < min_threshold:
                 #package.linked_document_list.remove(linked_doc)
@@ -361,6 +374,8 @@ class EvenByGroup:
                 new_doc_list.append(linked_doc)
         package.log_stage("Removed categories with fewer than " + str(
             min_threshold) + " rows in group.\nReduced rows for categories with more than " + str(max_threshold) + " rows in group.")
+
+        package.cache_linked_docs()
         package.linked_document_list = new_doc_list
         return package
 
@@ -381,6 +396,17 @@ class RemoveDuplicateDocs:
 
         package.log_stage("Before removing duplicates:  " + str(original_count) +"\nAfter removing duplicates: " + str(len(package.linked_document_list)))
 
+        return package
+
+class Reset:
+    def __init__(self):
+        pass
+
+    def perform(self, package: merm_model.PipelinePackage):
+        original_linked_doc_size = len(package.linked_document_list)
+        package.uncache_linked_docs()
+
+        package.log_stage("Original linked doc count: " + str(original_linked_doc_size) + "Current linked doc count: " + str(len(package.linked_document_list)))
         return package
 
 

@@ -56,19 +56,51 @@ _text_rank = [
 _category_prediction = [
     (10, "DataframeToListOfLists"),
     (11, "RemoveDuplicateDocs"),
-    (12, "MergeCategories1"),
+    #(12, "MergeCategories1"),
     (14, "CountBySpaceAndGroup"),
     (15, "ExcludeByGroup"),
    # (20, "ExcludeBySpace"),
     (30, "CountBySpaceAndGroup"),
-    (40, "EvenByGroup"),
+    (40, "EvenBySpace"),
     (45, "CountBySpaceAndGroup"),
     (50, "LinkedDocListToScikitRFCorpus"),
     (60, "ScikitRF"),
-    (65, "ScikitRFNearMisses"),
-    (70, "ScikitRFSentenceFinder"),
+    (65, "ScikitNearMisses"),
+    (70, "ScikitSentenceFinder"),
+    (75, "ScikitPrettyConfusion"),
 
     ]
+
+_category_prediction_ld = [
+    (1, "EsExtract"),
+    (10, "DataframeToListOfLists"),
+    (11, "RemoveDuplicateDocs"),
+    #(12, "MergeCategories1"),
+    (14, "CountBySpaceAndGroup"),
+    #(15, "ExcludeByGroup"),
+    (20, "ExcludeBySpace"),
+    (30, "CountBySpaceAndGroup"),
+    (40, "EvenBySpace"),
+    (43, "StopWordRemoval"),
+    (45, "CountBySpaceAndGroup"),
+    # (50, "LinkedDocListToScikitRFCorpus"),
+    # (80, "ScikitLinearDiscriminantAnalysis"),
+    # (85, "ScikitNearMisses"),
+    # (90, "ScikitSentenceFinder"),
+    # (95, "ScikitPrettyConfusion"),
+    # (100, "Reset"),
+    (110, "LinkedDocCorpusStopWordGenerator"),
+    (116, "StopWordRemoval"),
+    (120, "TokensToDoc"),
+    (145, "CountBySpaceAndGroup"),
+    (150, "LinkedDocListToScikitRFCorpus"),
+    (180, "ScikitLinearDiscriminantAnalysis"),
+    (185, "ScikitNearMisses"),
+    (190, "ScikitSentenceFinder"),
+    (195, "ScikitPrettyConfusion"),
+    (199, "Loop")
+]
+
 
 _save_as_csv = [
     (10, "SaveDfAsCsv")
@@ -114,10 +146,23 @@ def pick_pipeline():
         return _text_rank
     elif pipeline_name == "_category_prediction":
         return _category_prediction
+    elif pipeline_name == "_category_prediction_ld":
+        return _category_prediction_ld
     else:
         log.getLogger().warning(str(pipeline_name) + " is invalid. Please configure tools.ini and create a relevant list of steps within this script")
         return []
 
+
+def step_through(package:merm_model.PipelinePackage, pipeline_steps, log_string):
+
+    factory = package.dependencies_dict["pipe_process"].PipelineFactory()
+    for step_tuple in pipeline_steps:
+        if env.continue_run() == True:
+            package = factory.next_step(step_tuple[1], package)
+            log_string = log_string + "\n\n------------\n\n" + step_tuple[1]+ "\n\n"+package.stage_log()
+        else:
+            log.getLogger().warning("Continue run is FALSE")
+    return package
 
 
 def run_pipeline(package:merm_model.PipelinePackage):
@@ -132,9 +177,9 @@ def run_pipeline(package:merm_model.PipelinePackage):
     file_name = provider + "_" + pipeline_name + "_" + queryvalue + "_" + suffix +".txt"
 
 
-    log_string = ""
+
     #create factory
-    factory = package.dependencies_dict["pipe_process"].PipelineFactory()
+
 
     # specify steps
     pipeline_steps = pick_pipeline()
@@ -142,15 +187,16 @@ def run_pipeline(package:merm_model.PipelinePackage):
 
 
     pipeline_steps.sort(key=lambda tup: tup[0])
-
+    log_string = ""
 
     # ...and we're off to the races :)
-    for step_tuple in pipeline_steps:
-        if env.continue_run() == True:
-            package = factory.next_step(step_tuple[1], package)
-            log_string = log_string + "\n\n------------\n\n" + step_tuple[1]+ "\n\n"+package.stage_log()
-        else:
-            log.getLogger().warning("Continue run is FALSE")
+    package = step_through(package, pipeline_steps, log_string)
+    if "current_loop" in package.any_inputs_dict.keys():
+        current_loop = package.any_inputs_dict["current_loop"]
+        while current_loop < package.any_inputs_dict["loop_count"]:
+            current_loop = package.any_inputs_dict["current_loop"]
+            package = step_through(package, pipeline_steps, log_string)
+
 
 
     env.overwrite_file(report_dir + "/" + file_name, log_string)

@@ -1,13 +1,13 @@
-from sklearn.model_selection import GridSearchCV
-from sklearn.ensemble import RandomForestClassifier
+
 import tools.utils.log as log
 import tools.model.model_classes as merm_model
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 import pandas as pd
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from datetime import datetime
 
-class ScikitRF:
+class ScikitLinearDiscriminantAnalysis:
 
     def __init__(self):
         pass
@@ -15,12 +15,12 @@ class ScikitRF:
     def _analysis_id(self, package: merm_model.PipelinePackage):
         dt = datetime.now()
         suffix = str(dt.microsecond)[-4:]
-        if "rf_iteration_count" in package.any_inputs_dict.keys():
-            rf_count = package.any_inputs_dict["rf_iteration_count"] + 1
-            package.any_inputs_dict["rf_iteration_count"] = rf_count
+        if "ld_iteration_count" in package.any_inputs_dict.keys():
+            rf_count = package.any_inputs_dict["ld_iteration_count"] + 1
+            package.any_inputs_dict["ld_iteration_count"] = rf_count
         else:
             rf_count = 0
-            package.any_inputs_dict["rf_iteration_count"] = rf_count
+            package.any_inputs_dict["ld_iteration_count"] = rf_count
 
         categories = package.any_inputs_dict["SKcategories"]
         category_count = len(list(categories.keys()))
@@ -29,33 +29,42 @@ class ScikitRF:
 
 
 
+
     def perform(self, package: merm_model.PipelinePackage):
-        classifier = RandomForestClassifier(n_estimators=1000, random_state=0)
-        test_proportion = package.dependencies_dict["env"].config.getfloat("ml_instructions","rf_test_proportion")
+        test_proportion = package.dependencies_dict["env"].config.getfloat("ml_instructions", "rf_test_proportion")
         random_state = 0
+        sk_id  = self._analysis_id(package)
+        package.any_inputs_dict["sk_last_id"] = sk_id
 
         rf_categories = package.any_inputs_dict["SKcategories"]
         X = package.any_inputs_dict["SKX"]
         y = package.any_inputs_dict["SKY"]
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = test_proportion, random_state = random_state)
-        classifier.fit(X_train, y_train)
-        y_pred = classifier.predict(X_test)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_proportion, random_state=random_state)
+        lda = LDA(n_components=len(rf_categories) -1 )
+        X_lda_trained = lda.fit_transform(X_train.toarray(), y_train)
+        X_lda_tested = lda.transform(X_test.toarray())
+        lda.fit(X_train.toarray(), y_train)
+        y_pred = lda.predict(X_test.toarray())
+
 
         report = pd.DataFrame(confusion_matrix(y_test, y_pred)).values.tolist()
         report_string = self._report_string(report)
-        analysis_id = self._analysis_id(package)
-        package.any_inputs_dict["sk_last_id"] = analysis_id
+        package.any_analysis_dict[sk_id + "_confusion"] = report
+        package.any_analysis_dict[sk_id + "_ypred"] = y_pred
+        package.any_analysis_dict[sk_id + "_ytest"] = y_test
+        package.any_analysis_dict[sk_id + "_Xtest"] = X_test
+        package.any_analysis_dict[sk_id + "_Ycategories"] = rf_categories
 
-        package.any_analysis_dict[analysis_id + "_rfclassifier"] = classifier
-        package.any_analysis_dict[analysis_id + "_confusion"] = report
-        package.any_analysis_dict[analysis_id + "_ypred"] = y_pred
-        package.any_analysis_dict[analysis_id + "_ytest"] = y_test
-        package.any_analysis_dict[analysis_id + "_Xtest"] = X_test
-        package.any_analysis_dict[analysis_id + "_Ycategories"] = rf_categories
+        print('Accuracy' + str(accuracy_score(y_test, y_pred)))
 
-        package.log_stage(
-            "\nTraining doc count: "+str(X_train.shape[0])+"\nTraining feature count: "+str(X_train.shape[1])+"\nTestTrain split:"+ str(test_proportion) + "\nRF confusion matrix:\n" + report_string + "\nclassification_report:\n" + str(classification_report(y_test, y_pred)) + "Accuracy:\n" + str(accuracy_score(y_test, y_pred)))
+        print('Original number of features:', X.shape[1])
+        print('Reduced number of features:', X_lda_trained.shape[1])
+        lda.explained_variance_ratio_
+        package.log_stage("Linear Discriminat Analysis\nComponents: " + str(len(rf_categories) -1 )+ "\nAccuracy" + str(accuracy_score(y_test, y_pred)) + \
+                           "\nOriginal number of features: " + str(X.shape[1]) + "\nReduced number of features:" +  str(X_lda_trained.shape[1]) + \
+                            "\nConfusion matrix\n" + report_string)
         return package
+
 
     def _report_string(self, report):
         report_string = "      "
@@ -87,5 +96,3 @@ class ScikitRF:
         else:
             new_string = new_string + str(number) + " "
         return  new_string
-
-
