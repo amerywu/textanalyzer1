@@ -59,7 +59,10 @@ class ScikitLinearDiscriminantAnalysis:
 
         print('Original number of features:', X.shape[1])
         print('Reduced number of features:', X_lda_trained.shape[1])
-        lda.explained_variance_ratio_
+        explained_variance = pd.DataFrame(lda.explained_variance_ratio_).values.tolist()
+        coeff = pd.DataFrame(lda.coef_).values.tolist()
+
+        print(explained_variance)
         package.log_stage("Linear Discriminat Analysis\nComponents: " + str(len(rf_categories) -1 )+ "\nAccuracy" + str(accuracy_score(y_test, y_pred)) + \
                            "\nOriginal number of features: " + str(X.shape[1]) + "\nReduced number of features:" +  str(X_lda_trained.shape[1]) + \
                             "\nConfusion matrix\n" + report_string)

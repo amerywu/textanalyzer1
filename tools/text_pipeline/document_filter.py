@@ -21,8 +21,7 @@ class SubsetData:
     def _by_space(self, package):
         group_testenv = package.dependencies_dict["env"].config.getboolean("pipeline_instructions", "group_testenv")
         if True == group_testenv:
-            relevant_groups_string = package.dependencies_dict["env"].config["pipeline_instructions"][
-                "group_testenv_list"]
+            relevant_groups_string = package.dependencies_dict["env"].config["pipeline_instructions"]["group_testenv_list"]
             relevant_groups_list = relevant_groups_string.split(",")
             return self._group_test_spaces(package, relevant_groups_list)
         else:
@@ -168,8 +167,8 @@ class ExcludeBySpace:
             return package
 
 
-        include_list = package.dependencies_dict["env"].config["job_instructions"]["filter_space_include"].split(",")
-        exclude_list = package.dependencies_dict["env"].config["job_instructions"]["filter_space_exclude"].split(",")
+        include_list = package.dependencies_dict["env"].config["ml_instructions"]["filter_space_include"].split(",")
+        exclude_list = package.dependencies_dict["env"].config["ml_instructions"]["filter_space_exclude"].split(",")
 
         included = self.include_docs(include_list, package.linked_document_list)
         new_linked_doc_list = self.exclude_list(exclude_list,included)
@@ -228,8 +227,8 @@ class ExcludeByGroup:
         if thetype is dict:
             return package
 
-        include_list = package.dependencies_dict["env"].config["job_instructions"]["filter_group_include"].split(",")
-        exclude_list = package.dependencies_dict["env"].config["job_instructions"]["filter_group_exclude"].split(",")
+        include_list = package.dependencies_dict["env"].config["ml_instructions"]["filter_group_include"].split(",")
+        exclude_list = package.dependencies_dict["env"].config["ml_instructions"]["filter_group_exclude"].split(",")
         included = self.include_docs(include_list, package.linked_document_list)
         new_linked_doc_list = self.exclude_list(exclude_list,included)
 
@@ -327,17 +326,17 @@ class EvenBySpace:
         current_category_count = {}
 
         env = package.dependencies_dict["env"]
-        dynamic_threshold = env.config.getboolean("job_instructions", "filter_category_threshold_type_dynamic")
+        dynamic_threshold = env.config.getboolean("ml_instructions", "filter_category_threshold_type_dynamic")
         median = stats.median(category_count_list)
 
         if dynamic_threshold == True:
-            min = env.config.getfloat("job_instructions","filter_category_min_threshold_dynamic")
-            max = env.config.getfloat("job_instructions", "filter_category_max_threshold_dynamic")
+            min = env.config.getfloat("ml_instructions","filter_category_min_threshold_dynamic")
+            max = env.config.getfloat("ml_instructions", "filter_category_max_threshold_dynamic")
             min_threshold = median * min
             max_threshold = median * max
         else:
-            min = env.config.getint("job_instructions", "filter_category_min_threshold")
-            max = env.config.getint("job_instructions", "filter_category_max_threshold")
+            min = env.config.getint("ml_instructions", "filter_category_min_threshold")
+            max = env.config.getint("ml_instructions", "filter_category_max_threshold")
             min_threshold = min
             max_threshold = max
         shuffle(package.linked_document_list)
@@ -379,20 +378,20 @@ class EvenByGroup:
 
         package.uncache_linked_docs()
         linked_docs = package.linked_document_list.copy()
-        dynamic_threshold = env.config.getboolean("job_instructions", "filter_groupby_threshold_type_dynamic")
+        dynamic_threshold = env.config.getboolean("ml_instructions", "filter_groupby_threshold_type_dynamic")
 
 
         median = stats.median(group_count_list)
 
 
         if dynamic_threshold == True:
-            min = env.config.getfloat("job_instructions","filter_groupby_min_threshold_dynamic")
-            max = env.config.getfloat("job_instructions", "filter_groupby_max_threshold_dynamic")
+            min = env.config.getfloat("ml_instructions","filter_groupby_min_threshold_dynamic")
+            max = env.config.getfloat("ml_instructions", "filter_groupby_max_threshold_dynamic")
             min_threshold = median * min
             max_threshold = median * max
         else:
-            min = env.config.getint("job_instructions", "filter_groupby_min_threshold")
-            max = env.config.getint("job_instructions", "filter_groupby_max_threshold")
+            min = env.config.getint("ml_instructions", "filter_groupby_min_threshold")
+            max = env.config.getint("ml_instructions", "filter_groupby_max_threshold")
             min_threshold = min
             max_threshold = max
 
@@ -455,4 +454,19 @@ class Reset:
         package.log_stage("Original linked doc count: " + str(original_linked_doc_size) + "Current linked doc count: " + str(len(package.linked_document_list)))
         return package
 
+class FilterTokensByCount:
+    def __init__(self):
+        pass
 
+    def perform(self, package: merm_model.PipelinePackage):
+        env = package.dependencies_dict["env"]
+        original_count = len(package.linked_document_list)
+        min_length = env.config.getint("ml_instructions", "min_sentence_length")
+        sentence_list = []
+        for doc in package.linked_document_list:
+            if len(doc.tokens) >= min_length:
+                sentence_list.append(doc)
+        package.linked_document_list = sentence_list
+
+        package.log_stage("Removed sentences with fewer than " + str(min_length) + " tokens. \n Original doc count: " + str(original_count) + "\nNew doc count: " + str(len(package.linked_document_list)) )
+        return package

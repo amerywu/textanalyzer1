@@ -84,6 +84,7 @@ class PipelineManifest:
         "PartOfSpeechAnalyzerFromTextRank" : tools.text_pipeline.part_of_speech_analyzer.PartOfSpeechAnalyzerFromTextRank(),
         "GensimSentenceFinder": tools.text_pipeline.gensim_sentence_finder.GensimSentenceFinder(),
         "Reset" : tools.text_pipeline.document_filter.Reset(),
+        "FilterTokensByCount" : tools.text_pipeline.document_filter.FilterTokensByCount(),
         "Loop" : tools.text_pipeline.pipeline_utils.Loop(),
         "EsExtract" : tools.text_pipeline.extract_data.EsExtract(),
         "StopWord_SubPipe" : tools.text_sub_pipeline.stop_word_by_subset.StopWord_SubPipe(),
