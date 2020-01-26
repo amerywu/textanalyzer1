@@ -5,7 +5,7 @@ import tools.utils.envutils as env
 from datetime import datetime
 
 def run_post_process(package: merm_model.PipelinePackage):
-    log.getLogger().info("save dictionaries to file")
+    log.getLogger().info("save lists to file")
     path = env.config["job_instructions"]["output_folder"]
     dt = datetime.now()
     suffix = str(dt.microsecond)[-4:]

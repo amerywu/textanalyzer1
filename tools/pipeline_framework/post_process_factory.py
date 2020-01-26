@@ -12,7 +12,7 @@ import tools.post_pipeline.major_analysis as major_analysis
 import tools.post_pipeline.text_rank_output_by_group as text_rank_output_by_group
 import tools.post_pipeline.rake_output_by_group as rake_output_by_group
 import tools.post_pipeline.noun_phrase_output_by_group as noun_phrase_output_by_group
-
+import tools.post_pipeline.sklearn_ld_report as sklearn_ld_report
 import tools.post_pipeline.rake as rake
 
 
@@ -54,6 +54,8 @@ def triage(package:merm_model.PipelinePackage):
             noun_phrase_output_by_group.run_post_process(package)
         elif instruction == "save_lists_to_file":
             save_lists_to_file.run_post_process(package)
+        elif instruction == "sklearn_ld_report":
+            sklearn_ld_report.run_post_process(package)
 
         elif instruction == "none":
             log.getLogger().info("Nothing to do. No post-process assigned.")

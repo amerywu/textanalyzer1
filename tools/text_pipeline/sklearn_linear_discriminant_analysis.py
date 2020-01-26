@@ -24,7 +24,7 @@ class ScikitLinearDiscriminantAnalysis:
 
         categories = package.any_inputs_dict["SKcategories"]
         category_count = len(list(categories.keys()))
-        id =  str(rf_count) + "_" + str(category_count)  + "_" + str(len(package.any_inputs_dict["SKY"])) + "_" + suffix
+        id =  "ld_" + str(rf_count) + "_" + str(category_count)  + "_" + str(len(package.any_inputs_dict["SKY"])) + "_" + suffix
         return id
 
 
@@ -42,18 +42,14 @@ class ScikitLinearDiscriminantAnalysis:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_proportion, random_state=random_state)
         lda = LDA(n_components=len(rf_categories) -1 )
         X_lda_trained = lda.fit_transform(X_train.toarray(), y_train)
-        X_lda_tested = lda.transform(X_test.toarray())
         lda.fit(X_train.toarray(), y_train)
         y_pred = lda.predict(X_test.toarray())
 
 
         report = pd.DataFrame(confusion_matrix(y_test, y_pred)).values.tolist()
         report_string = self._report_string(report)
-        package.any_analysis_dict[sk_id + "_confusion"] = report
-        package.any_analysis_dict[sk_id + "_ypred"] = y_pred
-        package.any_analysis_dict[sk_id + "_ytest"] = y_test
-        package.any_analysis_dict[sk_id + "_Xtest"] = X_test
-        package.any_analysis_dict[sk_id + "_Ycategories"] = rf_categories
+
+
 
         print('Accuracy' + str(accuracy_score(y_test, y_pred)))
 
@@ -62,10 +58,19 @@ class ScikitLinearDiscriminantAnalysis:
         explained_variance = pd.DataFrame(lda.explained_variance_ratio_).values.tolist()
         coeff = pd.DataFrame(lda.coef_).values.tolist()
 
+        package.any_analysis_dict[sk_id + "_confusion"] = report
+        package.any_analysis_dict[sk_id + "_ypred"] = y_pred
+        package.any_analysis_dict[sk_id + "_ytest"] = y_test
+        package.any_analysis_dict[sk_id + "_Xtest"] = X_test
+        package.any_analysis_dict[sk_id + "_Ycategories"] = rf_categories
+        package.any_analysis_dict[sk_id + "_explained_variance"] = explained_variance
+        package.any_analysis_dict[sk_id + "_coefficients"] = coeff
+        package.any_analysis_dict[sk_id +  "_vocab"] = package.any_inputs_dict["SKdict"]
+
         print(explained_variance)
         package.log_stage("Linear Discriminat Analysis\nComponents: " + str(len(rf_categories) -1 )+ "\nAccuracy" + str(accuracy_score(y_test, y_pred)) + \
                            "\nOriginal number of features: " + str(X.shape[1]) + "\nReduced number of features:" +  str(X_lda_trained.shape[1]) + \
-                            "\nConfusion matrix\n" + report_string)
+                            "\nConfusion matrix\n" + report_string + "\n\nvariance  " + str(explained_variance))
         return package
 
 

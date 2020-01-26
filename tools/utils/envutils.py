@@ -2,6 +2,7 @@ import configparser
 import os
 import sys
 import traceback
+import csv
 from os.path import expanduser
 
 
@@ -104,3 +105,7 @@ def overwrite_file(path, text):
     f.write(text)
     f.close()
 
+def list_of_lists_to_csv(path, list_of_lists):
+    with open(path, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerows(list_of_lists)
