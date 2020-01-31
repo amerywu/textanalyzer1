@@ -39,6 +39,7 @@ _sklearn_lda_steps = [
 
 
 _text_rank = [
+    (1, "EsExtract"),
     (10, "TextCleaner_DF"),
     (20, "DataframeToListOfLists"),
     (35, "LinkedDocCorpusWordCount"),
@@ -53,7 +54,28 @@ _text_rank = [
     (80, "GensimSentenceFinder"),
 ]
 
+_whole_corpus_unsupervised = [
+    (1, "EsExtract"),
+    (10, "TextCleaner_DF"),
+    (15, "DataframeToListOfLists"),
+    (20, "LinkedDocCorpusWordCount"),
+    (21, "RemoveDuplicateDocs"),
+    (22, "LinkedDocCorpusWordCount"),
+    (24, "LinkedDocCorpusStopWordGenerator"),
+    (26, "StopWordRemoval"),
+    (37, "FilterTokensByCount"),
+    (47, "TokensToDoc"),
+    (58, "LinkedDocCorpusWordCount"),
+    (60, "LinkedDocListToScikitRFCorpus"),
+    (65, "ScikitAgglomerativeKmeans"),
+    (70, "ListOfListsToGensimCorpora"),
+    (75, "LinkedDocCorpusWordCount"),
+    (95, "GensimLDA"),
+    (100, "GensimSentenceFinder"),
+]
+
 _category_prediction = [
+    (1, "EsExtract"),
     (10, "DataframeToListOfLists"),
     (11, "RemoveDuplicateDocs"),
     #(12, "MergeCategories1"),
@@ -146,6 +168,9 @@ def pick_pipeline():
         return _category_prediction
     elif pipeline_name == "_category_prediction_ld":
         return _category_prediction_ld
+    elif pipeline_name == "_whole_corpus_unsupervised":
+        return _whole_corpus_unsupervised
+
     else:
         log.getLogger().warning(str(pipeline_name) + " is invalid. Please configure tools.ini and create a relevant list of steps within this script")
         return []

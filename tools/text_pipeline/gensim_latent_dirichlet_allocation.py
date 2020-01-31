@@ -24,6 +24,7 @@ class GensimLDA:
         report_word_count = env.config.getint('ml_instructions', 'gensim_lda_term_per_topic_reporting_count')
         if len(package.dict.token2id) > 50:
             topic_dict = {}
+            topic_dict_friendly = {}
             lda_model = gensim.models.ldamodel.LdaModel(corpus=package.corpus,
                                                         id2word=package.dict,
                                                         num_topics=topic_count,
@@ -36,13 +37,17 @@ class GensimLDA:
             for index, topic in lda_model.show_topics(formatted=False, num_words=report_word_count):
                 #print('Topic: {} \nWords: {}'.format(index, [w[0] for w in topic]))
                 words_for_topic = []
+                words_for_topic_friendly = []
                 for w in topic:
                     msg = str(index) + ":" + str(w)
                     log.getLogger().info(msg)
                     words_for_topic.append((w[0],w[1]))
+                    words_for_topic_friendly.append(str(w[0]) + "," + str(w[1]))
                 topic_dict[index] = words_for_topic
+                topic_dict_friendly[index] = words_for_topic_friendly
 
             package.any_analysis_dict[lda_analysis_key(package)] = topic_dict
+            package.any_analysis_dict[lda_analysis_key(package) + "_friendly"] = topic_dict_friendly
             new_package = merm_model.PipelinePackage(lda_model,package.corpus,package.dict,package.linked_document_list,package.any_analysis_dict, package.any_inputs_dict, package.dependencies_dict)
             new_package.log_stage("Performed Gensim LDA.\nTopic Count: " + str(topic_count) + "\nIterations: " + str(100) + \
                                   "\nalpha = 0 \nUpdate Every: 1\n per_word_topics: False\nReporting on top " + str(report_word_count) + "words in each topic\n")

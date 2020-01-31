@@ -28,14 +28,19 @@ def _typeOrNone(obj):
 
 
 def category_group_tuple(provider):
-    if "job" in provider:
-        return ("majorFinal", "majorFinal")
-    elif "corpus_text_rank" in provider:
-        return("category", "rank")
-    elif "corpus_lda" in provider:
-        return("analysis_type", "category")
-    else:
-        return None
+    try:
+        if "job" in provider:
+            return ("majorFinal", "majorFinal")
+        elif "corpus_text_rank" in provider:
+            return("category", "rank")
+        elif "corpus_lda" in provider:
+            return("analysis_type", "category")
+        elif "corpus_noun_phrase" in provider:
+            return("analysis_type", "no_grouping")
+        elif "corpus_rake" in provider:
+            return("majorFinal", "rank")
+    except:
+        raise ValueError("category_group_tuple unknown provider " + provider)
 
 
 def linked_document_from_dict(dict, provider):
@@ -93,6 +98,40 @@ def linked_document_from_dict(dict, provider):
                               {},  # any_inputs
                               dict["created"], # created
                               dict["category"]  # groupedby
+                              )
+    elif "corpus_rake" in provider:
+        return LinkedDocument(dict["sentence"],  # raw
+                              dict["category"],  # title
+                              [],  # tokens
+                              dict["src"],  # src
+                              None,  # ui
+                              provider,  # provider
+                              dict["id"],  # uid
+                              dict["src"],  # index_name
+                              dict["category"],  # space
+                              dict["score"],  # scores
+                              [],  # corpus_doc
+                              {},  # any_analysis
+                              {},  # any_inputs
+                              dict["created"], # created
+                              dict["rank"]  # groupedby
+                              )
+    elif "corpus_noun_phrase" in provider:
+        return LinkedDocument(dict["sentence"],  # raw
+                              dict["category"],  # title
+                              [],  # tokens
+                              dict["src"],  # src
+                              None,  # ui
+                              provider,  # provider
+                              dict["id"],  # uid
+                              dict["src"],  # index_name
+                              dict["category"],  # space
+                              None,  # scores
+                              [],  # corpus_doc
+                              {},  # any_analysis
+                              {},  # any_inputs
+                              dict["created"], # created
+                              "no_groupings"  # groupedby
                               )
     else:
         raise Exception("Unknown provider " + provider)

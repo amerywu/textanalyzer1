@@ -107,11 +107,15 @@ class GensimLdaGrouped_SubPipe:
         dict_for_group_processing["lda_analysis_by_group"][sub_corpus_name] = package_one_group.any_analysis_dict[gensimlda.lda_analysis_key(package_one_group)]
         overlap_dict = self._topic_overlap(dict_for_group_processing["lda_analysis_by_group"][sub_corpus_name])
         stop_list = self._dynamic_stop_words(overlap_dict, package_one_group.dependencies_dict)
-        if len(stop_list) > 4:
+
+        max_overlap = package_one_group.dependencies_dict["env"].config.getint("ml_instructions", "gensim_lda_permitted_term_overlap_across_topics")
+        if len(stop_list) > max_overlap:
             msg = "\n\n=============\nWill try again while removing " + str(stop_list) + " from " + sub_corpus_name
             log.getLogger().info(msg)
+
             package_one_group.any_analysis_dict = {}
-            package_one_group.any_analysis_dict["stop_words"] = stop_list
+            incrementing_key = package_one_group.dependencies_dict["colutils"].incrementing_key("stop_words", package_one_group.any_analysis_dict)
+            package_one_group.any_analysis_dict[incrementing_key] = stop_list
             package_one_group = self._analyze_subset(package_one_group,
                                                      dict_for_group_processing,
                                                      sub_corpus_name,

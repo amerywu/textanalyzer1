@@ -237,6 +237,8 @@ def _process_row(content,provider):
         return _process_reddit_row(content)
     elif provider == "corpus_text_rank":
         return _process_text_rank_row(content)
+    elif provider == "corpus_noun_phrase":
+        return _process_noun_phrase_row(content)
     elif provider == "corpus_lda":
         return _process_lda_row(content)
     elif provider == "corpus_rake":
@@ -327,6 +329,16 @@ def _process_text_rank_row(content):
     }
     return row
 
+def _process_noun_phrase_row(content):
+    row = {
+        "category": content['_source']['category'],
+        "sentence": content['_source']['sentence'],
+        "id": content['_id'],
+        "created": content['_source']['created'],
+        "src": content['_source']['src'],
+    }
+    return row
+
 def _process_lda_row(content):
     row = {
         "category": content['_source']['category'],
@@ -344,6 +356,7 @@ def _process_rake_row(content):
         "sentence": content['_source']['sentence'],
         "id": content['_id'],
         "score": content['_source']['score'],
+        "rank": content['_source']['rank'],
         "created": content['_source']['created'],
         "src": content['_source']['src'],
     }
