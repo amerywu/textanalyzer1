@@ -13,11 +13,11 @@ class PipelineFactory:
         log.getLogger().info(msg)
         manifest = factory.PipelineManifest
         new_task = manifest.manifest[task]
-        result = new_task.perform(package)
+        package = new_task.perform(package)
         package.any_inputs_dict["previous_task"] = task
         package.any_inputs_dict["history"].append(task)
-        if("Package" in type(result).__name__):
-            log.getLogger().warning("STRUCTURE after " + task + ": " + result.structure())
+        if("Package" in type(package).__name__):
+            log.getLogger().warning("STRUCTURE after " + task + ": " + package.structure())
         else:
             log.getLogger().warning("The return type is not of type PipelinePackage. THIS IS BAD PRACTICE :(")
-        return result
+        return package

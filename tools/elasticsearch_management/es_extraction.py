@@ -125,10 +125,10 @@ def _extract_from_one_provider(es, provider, package:merm_model.PipelinePackage)
         dfu.col_names(df,"complete_corpus_df")
         msg = "\n\n>>>>>>>>>>>>>>   Entering Pipeline For  " + str(provider) + ">>>>>>>>>>\n\n"
         log.getLogger().info(msg)
-        analysis_dict = {}
-        analysis_dict["provider"] = provider
+
+        package.any_analysis_dict["provider"] = provider
         package.corpus = complete_corpus_df
-        package.any_analysis_dict = analysis_dict
+
         return package
 
 
@@ -172,7 +172,7 @@ def _generate_query(dependencies_dict:Dict):
         else:
             return {
                 'query': {
-                    'match': {
+                    'wildcard': {
                         query_field : query_value
                     }
                 }
@@ -243,6 +243,8 @@ def _process_row(content,provider):
         return _process_lda_row(content)
     elif provider == "corpus_rake":
         return _process_rake_row(content)
+    elif provider == "corpus_kmeans_subset":
+        return _process_kmeans_row(content)
     else:
         raise Exception("Unknown Provider " + provider)
 
@@ -322,6 +324,7 @@ def _process_text_rank_row(content):
     row = {
         "category": content['_source']['category'],
         "sentence": content['_source']['sentence'],
+        "docid": content['_source']['docid'],
         "id": content['_id'],
         "rank": content['_source']['rank'],
         "created": content['_source']['created'],
@@ -359,6 +362,19 @@ def _process_rake_row(content):
         "rank": content['_source']['rank'],
         "created": content['_source']['created'],
         "src": content['_source']['src'],
+    }
+    return row
+
+def _process_kmeans_row(content):
+    row = {
+        "category": content['_source']['category'],
+        "sentence": content['_source']['sentence'],
+        "id": content['_id'],
+        "group": content['_source']['group'],
+        "terms": content['_source']['terms'],
+        "created": content['_source']['created'],
+        "src": content['_source']['src'],
+        "doc_id": content['_source']['doc_id'],
     }
     return row
 

@@ -54,7 +54,51 @@ _text_rank = [
     (80, "GensimSentenceFinder"),
 ]
 
+
+
+_text_rank_only = [
+    (1, "EsExtract"),
+    (10, "TextCleaner_DF"),
+    (20, "DataframeToListOfLists"),
+    (35, "LinkedDocCorpusWordCount"),
+    (30, "TextRankGroupedSimple_SubPipe"),
+]
+
+
 _whole_corpus_unsupervised = [
+    (1, "EsExtract"),
+    (10, "TextCleaner_DF"),
+    (15, "DataframeToListOfLists"),
+    (17, "ExcludeBySpace"),
+    (20, "LinkedDocCorpusWordCount"),
+    (21, "RemoveDuplicateDocs"),
+    (22, "LinkedDocCorpusWordCount"),
+    (34, "LinkedDocCorpusStopWordGenerator"),
+    (40, "StopWordRemoval"),
+    (42, "FilterTokensByCount"),
+    (47, "TokensToDoc"),
+    (58, "LinkedDocCorpusWordCount"),
+    (60, "LinkedDocListToScikitRFCorpus"),
+    (70, "ScikitKmeansWithTermRemoval"),
+    (74, "EsExtract"),
+    (78, "RemoveDuplicateDocs"),
+    (80, "KmeansSentenceFinder")
+]
+
+_kmeans_subset = [
+    (1, "EsExtract"),
+    (10, "TextCleaner_DF"),
+    (15, "DataframeToListOfLists"),
+    (17, "ExcludeBySpace"),
+    (20, "LinkedDocCorpusWordCount"),
+    (21, "RemoveDuplicateDocs"),
+    (22, "LinkedDocCorpusWordCount"),
+    (34, "KmeansGrouped_SubPipe"),
+]
+
+
+
+_whole_corpus_unsupervised_with_pca_hmmm = [
     (1, "EsExtract"),
     (10, "TextCleaner_DF"),
     (15, "DataframeToListOfLists"),
@@ -67,18 +111,29 @@ _whole_corpus_unsupervised = [
     (47, "TokensToDoc"),
     (58, "LinkedDocCorpusWordCount"),
     (60, "LinkedDocListToScikitRFCorpus"),
-    (65, "ScikitAgglomerativeKmeans"),
-    (70, "ListOfListsToGensimCorpora"),
-    (75, "LinkedDocCorpusWordCount"),
-    (95, "GensimLDA"),
-    (100, "GensimSentenceFinder"),
+    (65, "ScikitPrincipalComponentAnalysis"),
+
 ]
+
+_info = [
+    (1, "EsExtract"),
+    (10, "DataframeToListOfLists"),
+    (22, "LinkedDocCorpusWordCount"),
+    (30, "CountBySpaceAndGroup"),
+    (40, "RemoveDuplicateDocs"),
+    (45, "LinkedDocCorpusWordCount"),
+    (50, "CountBySpaceAndGroup"),
+    (60, "LinkedDocCorpusWordCount"),
+
+
+    ]
+
 
 _category_prediction = [
     (1, "EsExtract"),
     (10, "DataframeToListOfLists"),
     (11, "RemoveDuplicateDocs"),
-    #(12, "MergeCategories1"),
+    (12, "ExcludeBySpace"),
     (14, "CountBySpaceAndGroup"),
     (15, "ExcludeByGroup"),
    # (20, "ExcludeBySpace"),
@@ -90,7 +145,6 @@ _category_prediction = [
     (65, "ScikitNearMisses"),
     (70, "ScikitSentenceFinder"),
     (75, "ScikitPrettyConfusion"),
-
     ]
 
 _category_prediction_ld = [
@@ -164,15 +218,20 @@ def pick_pipeline():
         return _rake
     elif pipeline_name == '_text_rank':
         return _text_rank
+    elif pipeline_name == "_text_rank_only":
+        return _text_rank_only
     elif pipeline_name == "_category_prediction":
         return _category_prediction
     elif pipeline_name == "_category_prediction_ld":
         return _category_prediction_ld
     elif pipeline_name == "_whole_corpus_unsupervised":
         return _whole_corpus_unsupervised
-
+    elif pipeline_name == "_kmeans_subset":
+        return _kmeans_subset
+    elif pipeline_name == "_info":
+        return _info
     else:
-        log.getLogger().warning(str(pipeline_name) + " is invalid. Please configure tools.ini and create a relevant list of steps within this script")
+        log.getLogger().warning(str(pipeline_name) + " is invalid. Please configure tools.ini and create a relevant list of steps in pipeline.py within this script")
         return []
 
 
@@ -192,13 +251,15 @@ def step_through(package:merm_model.PipelinePackage, pipeline_steps, log_string)
 def run_pipeline(package:merm_model.PipelinePackage):
     log.getLogger().warning("------- STARTING PIPELINE -------")
     env = package.dependencies_dict["env"]
+
     report_dir = env.config["job_instructions"]["output_folder"]
     provider = env.config["extract_instructions"]["provider"]
     pipeline_name = env.config["pipeline_instructions"]["pipeline_name"]
     queryvalue = env.config["extract_instructions"]["query_value"]
     dt = datetime.now()
     suffix = str(dt.microsecond)[-4:]
-    file_name = provider + "_" + pipeline_name + "_" + queryvalue + "_" + suffix +".txt"
+
+    file_name = package.dependencies_dict["utils"].clean_string_for_tokenizing(provider + "_" + pipeline_name + "_" + queryvalue + "_" + suffix).replace(" ", "_") + ".txt"
 
 
 

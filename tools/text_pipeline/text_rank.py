@@ -27,7 +27,7 @@ class TextRank:
             sentence_by_rank_dict = self.rank_by_document(sentences,word_embeddings_list, package)
             for key, value in sentence_by_rank_dict.items():
                 sentence_list_for_that_rank = rank_by_dict[key]
-                sentence_list_for_that_rank.append(value)
+                sentence_list_for_that_rank.append([docid, value])
             if count % 100 == 0:
                 print(count)
             count = count + 1
@@ -53,7 +53,6 @@ class TextRank:
             clean_sentences_list.append(linked_sentence_doc.raw)
         sentence_vectors = self.generate_sentence_vectors(clean_sentences_list, word_embeddings_list)
 
-
         scores = self._score_generator(clean_sentences_list,sentence_vectors)
         if len(scores) == 0:
             return {}
@@ -68,9 +67,6 @@ class TextRank:
                     sentence_by_rank_dict[i] = ranked_sentences[i][1]
 
             return sentence_by_rank_dict
-
-
-
 
     def generate_sentence_vectors(self, clean_sentences, word_embeddings):
 
@@ -120,7 +116,6 @@ class TextRank:
         # Before proceeding further, let’s convert the similarity matrix sim_mat into a graph. The nodes of this graph will
         # represent the sentences and the edges will represent the similarity scores between the sentences. On this graph,
         # we will apply the PageRank algorithm to arrive at the sentence rankings.
-
         try:
             nx_graph = nx.from_scipy_sparse_matrix(similarity_matrix)
             scores = nx.pagerank(nx_graph, max_iter = 200)

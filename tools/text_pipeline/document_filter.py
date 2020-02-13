@@ -144,12 +144,10 @@ class StopWordRemoval:
             load_source = "from " + stop_list_path
 
         for linked_doc in package.linked_document_list:
-            new_tokens = []
             for word in linked_doc.tokens:
-                if not word in stop_words:
+                if  word in stop_words:
                     # log.getLogger().debug("removing " + word)
-                    new_tokens.append(word)
-            linked_doc.tokens = new_tokens
+                    linked_doc.tokens.remove(word)
 
         package.log_stage(
             "Removed all stop words from the corpus tokens (i.e., bag of words). The stop words were loaded " + load_source +"\nStop word count is " + str(len(stop_words)))
@@ -177,7 +175,7 @@ class ExcludeBySpace:
 
 
         new_package = merm_model.PipelinePackage(package.model, package.corpus, package.dict, new_linked_doc_list,
-                                                 package.any_analysis, package.any_inputs_dict,
+                                                 package.any_analysis_dict, package.any_inputs_dict,
                                                  package.dependencies_dict)
         new_package.any_analysis_dict["newlist"] = len(new_linked_doc_list)
         new_package.any_analysis_dict["doclist"] = len(new_package.linked_document_list)
@@ -469,4 +467,35 @@ class FilterTokensByCount:
         package.linked_document_list = sentence_list
 
         package.log_stage("Removed sentences with fewer than " + str(min_length) + " tokens. \n Original doc count: " + str(original_count) + "\nNew doc count: " + str(len(package.linked_document_list)) )
+        return package
+
+class CombineSentencesToDocs:
+    def __init__(self):
+        pass
+
+    def perform(self, package: merm_model.PipelinePackage):
+        env = package.dependencies_dict["env"]
+        original_count = len(package.linked_document_list)
+        merge_by = env.config["ml_instructions"]["merge_docs_field"]
+        merged_docs_dict = {}
+
+
+        for sub_doc in package.linked_document_list:
+            if merge_by == "groupedBy":
+                key = sub_doc.groupedBy
+            else:
+                key = sub_doc.space
+
+            if key in merged_docs_dict.keys():
+                merged_docs_dict[key]
+                merged_docs_dict[key].raw = merged_docs_dict[key].raw + " " + sub_doc.raw
+                merged_docs_dict[key].tokens = merged_docs_dict[key].tokens + sub_doc.tokens
+            else:
+                merged_docs_dict[key] = sub_doc
+
+        new_linked_doc_list = list(merged_docs_dict.values())
+        package.linked_document_list = new_linked_doc_list
+
+
+        package.log_stage("Merged documents by " + str(merge_by) + " tokens. \n Original doc count: " + str(original_count) + "\nNew doc count: " + str(len(package.linked_document_list)) )
         return package

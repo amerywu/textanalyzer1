@@ -47,8 +47,6 @@ class LinkedDocCorpusWordCount:
 
 
     def perform(self,package:merm_model.PipelinePackage):
-
-
         if type(package.linked_document_list) is list:
             corpus_word_frequency = self.count_as_doc_list(package.linked_document_list)
         else:

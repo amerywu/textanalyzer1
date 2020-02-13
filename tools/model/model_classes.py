@@ -39,6 +39,8 @@ def category_group_tuple(provider):
             return("analysis_type", "no_grouping")
         elif "corpus_rake" in provider:
             return("majorFinal", "rank")
+        elif "corpus_kmeans" in provider:
+            return("cluster", "major")
     except:
         raise ValueError("category_group_tuple unknown provider " + provider)
 
@@ -77,9 +79,9 @@ def linked_document_from_dict(dict, provider):
                               None,  # scores
                               [],  # corpus_doc
                               {},  # any_analysis
-                              {},  # any_inputs
+                              {"rank" : dict["rank"]},  # any_inputs
                               dict["created"], # created
-                              dict["rank"]  # groupedby
+                              dict["docid"]  # groupedby
                               )
 
     elif "corpus_lda" in provider:
@@ -132,6 +134,23 @@ def linked_document_from_dict(dict, provider):
                               {},  # any_inputs
                               dict["created"], # created
                               "no_groupings"  # groupedby
+                              )
+    elif "corpus_kmeans" in provider:
+        return LinkedDocument(dict["sentence"],  # raw
+                              dict["category"],  # title
+                              [],  # tokens
+                              dict["src"],  # src
+                              None,  # ui
+                              provider,  # provider
+                              dict["id"],  # uid
+                              dict["src"],  # index_name
+                              dict["group"],  # space
+                              None,  # scores
+                              [],  # corpus_doc
+                              {},  # any_analysis
+                              {},  # any_inputs
+                              dict["created"], # created
+                              dict["category"]  # groupedby
                               )
     else:
         raise Exception("Unknown provider " + provider)
@@ -230,29 +249,16 @@ class PipelinePackage:
 
 
     def cache_linked_docs(self):
-        if type(self.linked_document_list) is list:
-            cached_linked_docs = []
-            for linked_doc in self.linked_document_list:
-                cached_linked_docs.append(linked_doc)
-            self.cache_dict["linked_docs"] = cached_linked_docs
-            self.linked_document_list = []
-        elif type(self.linked_document_list is dict):
-            cached_linked_docs = {}
-            for key, items in self.linked_document_list.items():
-                cached_docs_list = []
-                for linked_doc in items:
-                    cached_docs_list.append(linked_doc)
-                cached_linked_docs[key] = cached_docs_list
-            self.cache_dict["linked_docs"] = cached_linked_docs
-            self.linked_document_list = []
+        self.cache_dict["linked_docs"] = self.linked_document_list.copy()
+        self.linked_document_list = []
 
+    def cache_copy_linked_docs(self):
+        self.cache_dict["linked_docs"] = self.linked_document_list.copy()
 
     def uncache_linked_docs(self):
         if "linked_docs" in self.cache_dict.keys() and len(self.cache_dict["linked_docs"]) > 0:
             self.linked_document_list = self.cache_dict["linked_docs"]
             self.cache_dict["linked_docs"] = []
-
-
 
     def log_stage(self, log):
         self.dependencies_dict["log"].getLogger().info(log)
@@ -265,7 +271,7 @@ class PipelinePackage:
         return "default_analysis_key"
 
     def any_analysis(self):
-        return self.any_analysis_dict[self.default_analysis_dic]
+        return self.any_analysis_dict
 
     def structure(self):
         return "Model: "+ _typeOrNone(self.model) + "  | Corpus: " + _typeOrNone(self.corpus)  + "  | Dictionary:  " + _typeOrNone(self.dict) + "  | Documents: " + _typeOrNone(self.linked_document_list) + " Results/Analysis: " + _typeOrNone(self.any_analysis_dict)

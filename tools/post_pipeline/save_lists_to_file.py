@@ -15,7 +15,13 @@ def run_post_process(package: merm_model.PipelinePackage):
         analysis = package.any_analysis_dict[key]
         if  type(analysis) is list:
             if type(analysis[0]) is list:
-                file_name = path +"/"+key+"_" + suffix+".csv"
-                with open(file_name, "w", newline="") as f:
-                    writer = csv.writer(f)
-                    writer.writerows(analysis)
+                file_name = path + "/" + key + "_" + suffix + ".csv"
+                if len(analysis[0]) > 0 and type(analysis[0][0]) is list:
+                    with open(file_name, "w", newline="") as f:
+                        for rows in analysis:
+                            writer = csv.writer(f)
+                            writer.writerows(rows)
+                else:
+                    with open(file_name, "w", newline="") as f:
+                        writer = csv.writer(f)
+                        writer.writerows(analysis)

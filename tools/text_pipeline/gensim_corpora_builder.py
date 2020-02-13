@@ -26,11 +26,7 @@ class ListOfListsToGensimCorpora:
         log.getLogger().info("Incoming doc count: " + str(len(linked_doc_list)))
         corpus = [dictionary.doc2bow(line) for line in bowlist]
 
-        for doc in corpus:
-            doc
-            for word, freq in doc:
-                 res = dictionary.get(word)
-                 res
+
         log.getLogger().info("Feature count: " + str(len(dictionary.id2token)))
         package.log_stage("Converted the corpus into a Gensim dictionary (i.e., bag of words)")
         return data_models.PipelinePackage(None, corpus, dictionary, linked_doc_list, package.any_analysis_dict, package.any_inputs_dict, package.dependencies_dict)

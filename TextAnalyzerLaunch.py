@@ -1,5 +1,6 @@
 
 import tools.elasticsearch_management.es_extraction as es_extract
+import tools.elasticsearch_management.elasticsearch_ingestion as ingestor
 import tools.utils.envutils as env
 import tools.utils.log as log
 import tools.pipeline_framework.factory as factory
@@ -28,6 +29,7 @@ def initiate_run():
         dependencies_dict["colutils"] = colutils
         dependencies_dict["log"] = log
         dependencies_dict["es_conn"] = es_conn
+        dependencies_dict["ingestor"] = ingestor
 
         log.getLogger().info("Dependencies: ")
         for k, v in dependencies_dict.items():

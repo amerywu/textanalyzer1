@@ -110,4 +110,5 @@ class TokensToDoc:
             for token in linked_doc.tokens:
                 new_sentence = new_sentence + token + " "
             linked_doc.raw = new_sentence
+        package.log_stage("Converted tokens to concatenated strings")
         return package

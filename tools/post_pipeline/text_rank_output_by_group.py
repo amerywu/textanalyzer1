@@ -22,7 +22,7 @@ def run_post_process(package: merm_model.PipelinePackage):
                 for k in analysis.keys():
                     for sentence in analysis[k]:
                         count = count + 1
-                        f.write("%s,%s\n" % (k, sentence))
+                        f.write("%s,%s,%s\n" % (k, sentence[0], sentence[1]))
     toes = env.config.getboolean("job_instructions","output_to_elasticsearch")
     log.getLogger().info("Text Rank Results saved " + str(count) + " rows")
     if True == toes:
@@ -49,7 +49,8 @@ def _generate_doc(src, category, rank, sentence):
     data = {}
     data['category'] = category
     data['rank'] = rank
-    data['sentence'] = sentence
+    data['docid'] = sentence[0]
+    data['sentence'] = sentence[1]
     data['src'] = src
     data["created"] = _current_milli_time()
     return data
@@ -100,6 +101,9 @@ def _newindex_json():
              "category":{
                 "type":"keyword"
              },
+              "docid": {
+                  "type": "text"
+              },
              "rank":{
                 "type":"keyword"
              },

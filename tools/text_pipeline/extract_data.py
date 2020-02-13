@@ -10,6 +10,6 @@ class EsExtract:
         es_conn = package.dependencies_dict["es_conn"]
 
         return_package:merm_model.PipelinePackage = es_extract.initiate_extraction(es_conn, package)
-        return_package.log_stage("Returning a dataframe " + str(return_package.corpus.shape))
+        return_package.log_stage("Returning a dataframe " + str(return_package.corpus.shape) + "\nCorpus name: " + return_package.any_analysis_dict["provider"])
         return return_package
 

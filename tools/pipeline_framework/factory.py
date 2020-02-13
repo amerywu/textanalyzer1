@@ -12,6 +12,7 @@ from tools.text_pipeline import document_filter
 from tools.text_pipeline import sklearn_corpora_builder
 from tools.text_pipeline import sklearn_linear_discriminant_analysis
 from tools.text_pipeline import sklearn_kmeans
+from tools.text_pipeline import sklearn_principal_component_analysis
 from tools.text_pipeline import topic_comparator
 from tools.text_pipeline import save_corpus_to_file
 from tools.text_pipeline import job_df_analysis
@@ -24,10 +25,14 @@ from tools.text_pipeline import  word_count
 from tools.text_pipeline import part_of_speech_analyzer
 from tools.text_pipeline import analysis_to_linkeddocs_conversion
 from tools.text_pipeline import gensim_sentence_finder
+from tools.text_pipeline import kmeans_sentence_finder
+
+
 from tools.text_sub_pipeline import text_rank_grouped
+from tools.text_sub_pipeline import text_rank_grouped_simple
 from tools.text_sub_pipeline import gensim_lda_grouped
 from tools.text_sub_pipeline import stop_word_by_subset
-
+from tools.text_sub_pipeline import kmeans_grouped
 
 
 class PipelineManifest:
@@ -38,6 +43,7 @@ class PipelineManifest:
     manifest = {
         "AreasOfStudyDfAnalysis": tools.text_pipeline.job_df_analysis.AreasOfStudyDfAnalysis(),
         "CountBySpaceAndGroup" : tools.text_pipeline.document_filter.CountBySpaceAndGroup(),
+        "CombineSentencesToDocs" : tools.text_pipeline.document_filter.CombineSentencesToDocs(),
         "DataframeToListOfLists" :  tools.text_pipeline.gensim_corpora_builder.DataframeToListOfLists(),
         "DfGroupByAnalysis": tools.text_pipeline.df_analysis.DfGroupByAnalysis(),
         "EsExtract" : tools.text_pipeline.extract_data.EsExtract(),
@@ -47,6 +53,7 @@ class PipelineManifest:
         "ExcludeBySpace": tools.text_pipeline.document_filter.ExcludeBySpace(),
         "FilterTokensByCount" : tools.text_pipeline.document_filter.FilterTokensByCount(),
         "GensimLDA": tools.text_pipeline.gensim_latent_dirichlet_allocation.GensimLDA(),
+        "GensimLDADistinctTopics" : tools.text_pipeline.gensim_latent_dirichlet_allocation.GensimLDADistinctTopics(),
         "GensimLdaGrouped_SubPipe": tools.text_sub_pipeline.gensim_lda_grouped.GensimLdaGrouped_SubPipe(),
         "GensimSentenceFinder": tools.text_pipeline.gensim_sentence_finder.GensimSentenceFinder(),
         "GensimTfIdfModelBuilder" : tools.text_pipeline.tfidf.GensimTfIdfModelBuilder(),
@@ -54,6 +61,8 @@ class PipelineManifest:
         "GensimTopicReduction" : tools.text_pipeline.gensim_latent_dirichlet_allocation.GensimTopicReduction(),
         "GensimTopicSimilarityAnalysis": tools.text_pipeline.gensim_latent_dirichlet_allocation.GensimTopicSimilarityAnalysis(),
         "JobDfAnalysis": tools.text_pipeline.job_df_analysis.JobDfAnalysis(),
+        "KmeansSentenceFinder" : tools.text_pipeline.kmeans_sentence_finder.KmeansSentenceFinder(),
+        "KmeansGrouped_SubPipe": tools.text_sub_pipeline.kmeans_grouped.KmeansGrouped_SubPipe(),
         "Lemmatize_Corpus_LinkedDocs" : tools.text_pipeline.text_cleaner.Lemmatize_Corpus_LinkedDocs(),
         "LinkedDocCorpusStopWordGenerator" : tools.text_pipeline.word_count.LinkedDocCorpusStopWordGenerator(),
         "LinkedDocCorpusWordCount": tools.text_pipeline.word_count.LinkedDocCorpusWordCount(),
@@ -71,11 +80,15 @@ class PipelineManifest:
         "Reset" : tools.text_pipeline.document_filter.Reset(),
         "SaveDfAsCsv" : tools.text_pipeline.save_corpus_to_file.SaveDfAsCsv(),
         "ScikitAgglomerativeKmeans" : tools.text_pipeline.sklearn_kmeans.ScikitAgglomerativeKmeans(),
+        "ScikitKmeansNoRepeats" : tools.text_pipeline.sklearn_kmeans.ScikitKmeansNoRepeats(),
+        "ScikitKmeansWithTermRemoval" : tools.text_pipeline.sklearn_kmeans.ScikitKmeansWithTermRemoval(),
         "ScikitLDA": tools.text_pipeline.sklearn_latent_dirichlet_allocation.ScikitLDA(),
         "SciKitLDAReport":tools.text_pipeline.sklearn_latent_dirichlet_allocation.SciKitLDAReport(),
         "ScikitLinearDiscriminantAnalysis" :tools.text_pipeline.sklearn_linear_discriminant_analysis.ScikitLinearDiscriminantAnalysis(),
         "ScikitNearMisses" : tools.text_pipeline.sklearn_utils.ScikitNearMisses(),
+        "ScikitKmeansNoRepeats": tools.text_pipeline.sklearn_kmeans.ScikitKmeansNoRepeats(),
         "ScikitPrettyConfusion" : tools.text_pipeline.sklearn_utils.ScikitPrettyConfusion(),
+        "ScikitPrincipalComponentAnalysis" : tools.text_pipeline.sklearn_principal_component_analysis.ScikitPrincipalComponentAnalysis(),
         "ScikitRF": tools.text_pipeline.sklearn_random_forest.ScikitRF(),
         "ScikitSentenceFinder" : tools.text_pipeline.sklearn_utils.ScikitSentenceFinder(),
         "StopWord_SubPipe" : tools.text_sub_pipeline.stop_word_by_subset.StopWord_SubPipe(),
@@ -84,6 +97,7 @@ class PipelineManifest:
         "TextCleaner_DF": tools.text_pipeline.text_cleaner.TextCleaner_Df_Corpus(),
         "TextRank": tools.text_pipeline.text_rank.TextRank(),
         "TextRankGrouped_SubPipe": tools.text_sub_pipeline.text_rank_grouped.TextRankGrouped_SubPipe(),
+        "TextRankGroupedSimple_SubPipe": tools.text_sub_pipeline.text_rank_grouped_simple.TextRankGroupedSimple_SubPipe(),
         "TextRankResultsToLinkedDocList" : tools.text_pipeline.analysis_to_linkeddocs_conversion.TextRankResultsToLinkedDocList(),
         "TokensToDoc" : tools.text_pipeline.text_cleaner.TokensToDoc(),
         "TopicComparator" : tools.text_pipeline.topic_comparator.TopicComparator(),

@@ -6,6 +6,7 @@ import tools.utils.envutils as env
 import gensim
 import csv
 import pandas as pd
+from gensim import corpora
 
 
 def lda_analysis_key( package: merm_model.PipelinePackage):
@@ -58,6 +59,122 @@ class GensimLDA:
                                                      package.dependencies_dict)
             new_package.log_stage("Gensim LDA aborted. There were too few tokens")
             return new_package
+
+
+class GensimLDADistinctTopics:
+
+    def __init__(self):
+        pass
+
+    def perform(self, package:merm_model.PipelinePackage):
+        #scipy_csc_matrix = gensim.matutils.corpus2csc(package.corpus)
+        log.getLogger().info("STAGE: Running a standard LDA in Gensim")
+        topic_count = env.config.getint('ml_instructions', 'gensim_lda_topics')
+        permitted_overlap = env.config.getint('ml_instructions', 'gensim_lda_permitted_term_overlap_across_topics')
+
+
+        log.getLogger().info("Seeking " + str(topic_count) + " topics")
+        report_word_count = env.config.getint('ml_instructions', 'gensim_lda_term_per_topic_reporting_count')
+        if len(package.dict.token2id) > 50:
+
+
+            new_package = self._run_lda(topic_count,report_word_count, permitted_overlap, package)
+            new_package.log_stage("Performed Gensim LDA.\nTopic Count: " + str(topic_count) + "\nIterations: " + str(100) + \
+                                  "\nalpha = 0 \nUpdate Every: 1\n per_word_topics: False\nReporting on top " + str(report_word_count) + "words in each topic\n")
+            return new_package
+        else:
+            new_package = merm_model.PipelinePackage(None, package.corpus, package.dict,
+                                                       package.linked_document_list, [], package.any_inputs_dict,
+                                                     package.dependencies_dict)
+            new_package.log_stage("Gensim LDA aborted. There were too few tokens")
+            return new_package
+
+
+    def _run_lda(self, topic_count, report_word_count, permitted_overlap, package:merm_model.PipelinePackage):
+        topic_dict = {}
+        topic_dict_friendly = {}
+        lda_model = gensim.models.ldamodel.LdaModel(corpus=package.corpus,
+                                                    id2word=package.dict,
+                                                    num_topics=topic_count,
+                                                    update_every=1,
+                                                    alpha='auto',
+                                                    per_word_topics=False,
+                                                    iterations=100)
+
+        topics = lda_model.show_topics(formatted=False, num_words=report_word_count)
+        for index, topic in topics:
+            # print('Topic: {} \nWords: {}'.format(index, [w[0] for w in topic]))
+            words_for_topic = []
+            words_for_topic_friendly = []
+            for w in topic:
+                words_for_topic.append((w[0], w[1]))
+                words_for_topic_friendly.append(str(w[0]) + "," + str(w[1]))
+            topic_dict[index] = words_for_topic
+            topic_dict_friendly[index] = words_for_topic_friendly
+
+        topic_overlap = self._topic_overlap(topic_dict)
+        log.getLogger().info(str(topic_overlap))
+        stop_words = self._dynamic_stop_words(topic_overlap, permitted_overlap)
+        if len(stop_words) > permitted_overlap:
+            log.getLogger().info("\n**********\nRerunning LDA after removing " + str(len(stop_words)) + " words")
+            package = self._remove_stop_words(stop_words,package)
+            package = self._rebuild_corpus(package)
+            return self._run_lda(topic_count,report_word_count,permitted_overlap,package)
+        package.any_analysis_dict[lda_analysis_key(package) + "_topic_overlap"] = topic_overlap
+        package.any_analysis_dict[lda_analysis_key(package)] = topic_dict
+        package.any_analysis_dict[lda_analysis_key(package) + "_friendly"] = topic_dict_friendly
+        return package
+
+
+    def _remove_stop_words(self, stop_words, package:merm_model.PipelinePackage):
+        for linked_doc in package.linked_document_list:
+            for word in stop_words:
+                if word in linked_doc.tokens:
+                    linked_doc.tokens.remove(word)
+            linked_doc.raw = " ".join(linked_doc.tokens)
+        return package
+
+    def _rebuild_corpus(self, package:merm_model.PipelinePackage):
+        linked_doc_list = package.linked_document_list
+        log.getLogger().info(
+            "Converting corpora as bag of words. Input format is List[List[str]]. Output is Gensim Dictionary")
+        log.getLogger().info("Corpus size: " + str(len(package.linked_document_list)))
+        bowlist = []
+        for doc in linked_doc_list:
+            bowlist.append(doc.tokens)
+
+        dictionary = corpora.Dictionary(bowlist)
+
+        # log.getLogger().info(dictionary)
+        log.getLogger().info("Incoming doc count: " + str(len(linked_doc_list)))
+        corpus = [dictionary.doc2bow(line) for line in bowlist]
+        package.corpus = corpus
+        package.dict = dictionary
+        return package
+
+    def _dynamic_stop_words(self, word_count_dict, permitted_overlap):
+
+        stop_list = []
+        for word, count in word_count_dict.items():
+            if count > permitted_overlap:
+                stop_list.append(word)
+        return stop_list
+
+
+
+
+    def _topic_overlap(self, terms_in_group):
+
+        word_count_dict = {}
+
+        for topic, terms in terms_in_group.items():
+            words, weights = zip(*terms)
+            for word in words:
+                if word in word_count_dict:
+                    word_count_dict[word] += 1
+                else:
+                    word_count_dict[word] = 1
+        return word_count_dict
 
 
 class GensimTopicSimilarityAnalysis:
