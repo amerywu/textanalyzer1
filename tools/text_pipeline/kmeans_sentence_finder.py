@@ -99,30 +99,19 @@ class KmeansSentenceFinder:
                 if len(topiclist) > i + 1:
                     words3 = [anchor, topiclist[i], topiclist[i+1]]
                     term_groups.append(words3)
+                    log.getLogger().info("words3 " + str(len(words3)) + "term_groups " + str(len(term_groups)))
 
                 words2 = [anchor, topiclist[i]]
                 term_groups.append(words2)
+                log.getLogger().info("words2 " + str(len(words2)) + str(len(term_groups)))
+
 
         salient_sentences1 = self._words_in_sentence_list2(term_groups, sentences, clusterid )
+        log.getLogger().info("Found " + str(len(salient_sentences1)) + " sentences\n\n\n")
         return salient_sentences1
 
 
-    def _add_to_sentence_dict(self, return_dict, sentences, words):
-        if len(sentences) > 0:
-            return_dict[self._list_to_string(words)] = [sentences[0][0] ,sentences[0][1],sentences[0][2],sentences[0][3]]
 
-    def _words_in_sentence_list(self, tokens: List[str], sentences):
-        raw_sentences = []
-        for sentence in sentences:
-            all_tokens_found = True
-            sentence_words = sentence[2].lower().split(" ")
-            for token in tokens:
-                if not token in sentence_words:
-                    all_tokens_found = False
-                    break
-            if all_tokens_found == True:
-                raw_sentences.append(sentence)
-        return raw_sentences
 
     def _words_in_sentence_list2(self, term_groups: List[str], sentences, clusterid):
         raw_sentences = []
@@ -141,6 +130,7 @@ class KmeansSentenceFinder:
                     row_list.append(sentence[2])
                     row_list.append(sentence[3])
                     raw_sentences.append(row_list)
+                    log.getLogger().info("added 1 for terms " + str(terms))
         return raw_sentences
 
     def _tokens_match(self, terms, sentence_words):

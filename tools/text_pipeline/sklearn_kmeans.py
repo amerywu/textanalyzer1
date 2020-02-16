@@ -12,7 +12,8 @@ import numpy as np
 
 
 def _silhouette( X,cluster_count ):
-
+    if len(cluster_count) == 1:
+        return [[int(cluster_count[0]), 1.0]]
     results = []
     for i in range(0, len(cluster_count)):
         cluster_count[i] = int(cluster_count[i])
