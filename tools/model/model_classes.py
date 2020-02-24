@@ -148,7 +148,7 @@ def linked_document_from_dict(dict, provider):
                               None,  # scores
                               [],  # corpus_doc
                               {},  # any_analysis
-                              {},  # any_inputs
+                              {"terms" : dict["terms"]},  # any_inputs
                               dict["created"], # created
                               dict["category"]  # groupedby
                               )

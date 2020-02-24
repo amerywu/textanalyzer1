@@ -7,7 +7,7 @@ from tools.text_pipeline import sklearn_latent_dirichlet_allocation
 from tools.text_pipeline import sklearn_random_forest
 from tools.text_pipeline import sklearn_utils
 from tools.text_pipeline import gensim_latent_dirichlet_allocation
-
+from tools.text_pipeline import glove_trainer
 from tools.text_pipeline import document_filter
 from tools.text_pipeline import sklearn_corpora_builder
 from tools.text_pipeline import sklearn_linear_discriminant_analysis
@@ -21,7 +21,8 @@ from tools.text_pipeline import pipeline_utils
 from  tools.text_pipeline import rake_analysis
 from tools.text_pipeline import text_cleaner
 from tools.text_pipeline import text_rank
-from tools.text_pipeline import  word_count
+from tools.text_pipeline import word_count
+from tools.text_pipeline import gensim_word2vec
 from tools.text_pipeline import part_of_speech_analyzer
 from tools.text_pipeline import analysis_to_linkeddocs_conversion
 from tools.text_pipeline import gensim_sentence_finder
@@ -60,9 +61,12 @@ class PipelineManifest:
         "GensimTfIdfTopTerms" : tools.text_pipeline.tfidf.GensimTfIdfTopTerms(),
         "GensimTopicReduction" : tools.text_pipeline.gensim_latent_dirichlet_allocation.GensimTopicReduction(),
         "GensimTopicSimilarityAnalysis": tools.text_pipeline.gensim_latent_dirichlet_allocation.GensimTopicSimilarityAnalysis(),
+        "GensimWord2Vec" : tools.text_pipeline.gensim_word2vec.GensimWord2Vec(),
+        "GloveModelBuilder" : tools.text_pipeline.glove_trainer.GloveModelBuilder(),
         "JobDfAnalysis": tools.text_pipeline.job_df_analysis.JobDfAnalysis(),
         "KmeansSentenceFinder" : tools.text_pipeline.kmeans_sentence_finder.KmeansSentenceFinder(),
         "KmeansGrouped_SubPipe": tools.text_sub_pipeline.kmeans_grouped.KmeansGrouped_SubPipe(),
+        "LemmatizeTokens" : tools.text_pipeline.part_of_speech_analyzer.LemmatizeTokens(),
         "Lemmatize_Corpus_LinkedDocs" : tools.text_pipeline.text_cleaner.Lemmatize_Corpus_LinkedDocs(),
         "LinkedDocCorpusStopWordGenerator" : tools.text_pipeline.word_count.LinkedDocCorpusStopWordGenerator(),
         "LinkedDocCorpusWordCount": tools.text_pipeline.word_count.LinkedDocCorpusWordCount(),

@@ -3,7 +3,7 @@ import tools.model.model_classes as merm_model
 from datetime import datetime
 import tools.utils.envutils as env
 import tools.utils.log as log
-
+import time
 ######################################################
 # This script functions as programmatic configuration of a pipeline.
 # Other scripts in this package focus on a specific genre of functionality.
@@ -19,14 +19,29 @@ _gensim_lda_steps = [
     (20, "ListOfListsToGensimCorpora"),
     (22, "GensimLDA")
 ]
+
+
+
+
+
+
+_glove_model_builder = [
+    (1, "EsExtract"),
+    (10, "TextCleaner_DF"),
+    (20, "DataframeToListOfLists"),
+    (25, "LemmatizeTokens"),
+    (30, "GloveModelBuilder")
+]
+
+
 _gensim_lda_by_subset_steps = [
     (10, "DataframeToListOfLists"),
     (30, "GensimLdaGrouped_SubPipe"),
 ]
+
 _lda_topic_comparator_steps = [
     (10, "TopicLoader"),
     (11, "TopicComparator")
-
 ]
 
 _sklearn_lda_steps = [
@@ -36,7 +51,15 @@ _sklearn_lda_steps = [
     (40, "SciKitLDAReport"),
 ]
 
+_word2vec = [
+    (1, "EsExtract"),
+    (10, "TextCleaner_DF"),
+    (20, "DataframeToListOfLists"),
+    (25, "ExcludeByGroup"),
+    (35, "LinkedDocCorpusWordCount"),
+    (60, "GensimWord2Vec")
 
+]
 
 _text_rank = [
     (1, "EsExtract"),
@@ -230,6 +253,10 @@ def pick_pipeline():
         return _kmeans_subset
     elif pipeline_name == "_info":
         return _info
+    elif pipeline_name == "_word2vec":
+        return _word2vec
+    elif pipeline_name == "_glove_model_builder":
+        return _glove_model_builder
     else:
         log.getLogger().warning(str(pipeline_name) + " is invalid. Please configure tools.ini and create a relevant list of steps in pipeline.py within this script")
         return []
@@ -239,9 +266,12 @@ def step_through(package:merm_model.PipelinePackage, pipeline_steps, log_string)
 
     factory = package.dependencies_dict["pipe_process"].PipelineFactory()
     for step_tuple in pipeline_steps:
+        start_time = time.time()
         if env.continue_run() == True:
             package = factory.next_step(step_tuple[1], package)
-            log_string = log_string + "\n\n------------\n\n" + step_tuple[1]+ "\n\n"+package.stage_log()
+            end_time = time.time() - start_time
+            log.getLogger().info("Time to complete: " + str(end_time))
+            log_string = log_string + "\n\n------------\n\n" + step_tuple[1]+ "\n\n"+package.stage_log() +"\n Time: " + str(end_time)
         else:
             log.getLogger().warning("Continue run is FALSE")
         package.log_stage(log_string)

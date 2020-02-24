@@ -211,11 +211,10 @@ def lemmatize_tokens(corpora_list: List[merm_model.LinkedDocument], stop_words: 
         doc.tokens = lemmatized_text
         lemmatized_corpus.append(doc)
         iter_count += 1
-        # sys.stdout.write(".")
+
         if env.test_env() == True and iter_count > env.test_env_doc_processing_count():
             log.getLogger().info("DEV MODE: Breaking loop here")
             break
-    # sys.stdout.flush()
     return lemmatized_corpus
 
 

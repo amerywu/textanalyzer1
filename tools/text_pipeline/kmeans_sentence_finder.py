@@ -1,31 +1,32 @@
-from typing import List
-from typing import Tuple
-import tools.model.model_classes as merm_model
-import tools.utils.text_parsing_utils as parser
+import json
 import re
-import tools.utils.log as log
 import time
 import uuid
-import json
+from typing import List
+
+import tools.model.model_classes as merm_model
+import tools.utils.log as log
+import tools.utils.text_parsing_utils as parser
+
 
 class KmeansSentenceFinder:
 
     def __init__(self):
         pass
 
-    def _prep_es(self, package, toes):
+    def _prep_es(self, package, toes, index_suffix):
         if toes == True:
             ingestor = package.dependencies_dict["ingestor"]
             rebuild_idx = package.dependencies_dict["env"].config.getboolean("job_instructions","es_recreate_index")
             if rebuild_idx:
-                ingestor.delete_index("corpus_kmeans")
-            ingestor.create_index(self._newindex_json(), "corpus_kmeans")
+                ingestor.delete_index("corpus_kmeans"+index_suffix)
+            ingestor.create_index(self._newindex_json(), "corpus_kmeans"+index_suffix)
 
     def perform(self, package: merm_model.PipelinePackage):
         env = package.dependencies_dict["env"]
         toes = env.config.getboolean("job_instructions", "output_to_elasticsearch")
         index_suffix = env.config["job_instructions"] ["kmeans_index_suffix"]
-        self._prep_es(package, toes)
+        self._prep_es(package, toes, index_suffix)
         csv_list_of_lists = []
         csv_list_of_lists.append(["text_source", "major", "topic_id", "term", "weight"])
         kmeans_top_terms_key = package.any_inputs_dict["kmeans_top_terms_key"]
@@ -87,7 +88,7 @@ class KmeansSentenceFinder:
         return returned_values
 
     def _compile_sentences(self, sentences, topiclist_in, clusterid):
-        return_dict = {}
+
         topiclist = topiclist_in.copy()
 
         term_groups = []
@@ -99,11 +100,11 @@ class KmeansSentenceFinder:
                 if len(topiclist) > i + 1:
                     words3 = [anchor, topiclist[i], topiclist[i+1]]
                     term_groups.append(words3)
-                    log.getLogger().info("words3 " + str(len(words3)) + "term_groups " + str(len(term_groups)))
+                    #log.getLogger().info("words3 " + str(len(words3)) + "term_groups " + str(len(term_groups)))
 
                 words2 = [anchor, topiclist[i]]
                 term_groups.append(words2)
-                log.getLogger().info("words2 " + str(len(words2)) + str(len(term_groups)))
+                #log.getLogger().info("words2 " + str(len(words2)) + str(len(term_groups)))
 
 
         salient_sentences1 = self._words_in_sentence_list2(term_groups, sentences, clusterid )
@@ -130,7 +131,6 @@ class KmeansSentenceFinder:
                     row_list.append(sentence[2])
                     row_list.append(sentence[3])
                     raw_sentences.append(row_list)
-                    log.getLogger().info("added 1 for terms " + str(terms))
         return raw_sentences
 
     def _tokens_match(self, terms, sentence_words):
@@ -171,6 +171,7 @@ class KmeansSentenceFinder:
         }
         return adict
 
+
     def _generate_doc(self,  src, terms, category, group, sentence, doc_id):
         data = {}
         data["doc_id"] = doc_id
@@ -196,7 +197,7 @@ class KmeansSentenceFinder:
                 log.getLogger().info("dispatching" + str(count))
                 ingestor._dispatch_bulk("corpus_kmeans" + index_suffix, bulk_list)
                 bulk_list = []
-            bulk_list.append(self._index_dict("corpus_kmeans" + index_suffix, src, sentence_data[0], sentence_data[1], sentence_data[2], sentence_data[3], sentence_data[4]))
+            bulk_list.append(self._index_dict("corpus_kmeans" + index_suffix, src, sentence_data[0], sentence_data[1], sentence_data[2], sentence_data[4], sentence_data[3]))
                         # ingestor._dispatch("corpus_text_rank", _id_generator(),json)
 
         ingestor._dispatch_bulk("corpus_kmeans" + index_suffix, bulk_list)
