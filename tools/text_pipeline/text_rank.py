@@ -15,26 +15,32 @@ class TextRank:
         pass
 
     def perform(self, package: merm_model.PipelinePackage):
-        word_embeddings_list = self._word_embeddings()
         utils = package.dependencies_dict["utils"]
         colutils = package.dependencies_dict["colutils"]
+        env = package.dependencies_dict["env"]
+        embeddings_file = env.config["ml_instructions"]["text_rank_embeddings_file"]
+        dimensions = env.config.getint("ml_instructions","glove_dimensions")
+
+        word_embeddings_list = self._word_embeddings(embeddings_file)
+
         #sentences = package.dependencies_dict["utils"].corpus_as_sentence_list(package)
         tokenized_sentences_by_doc = utils.corpus_as_tokenized_sentence_linked_doc_list_grouped_by_doc(package, True)
         log.getLogger().info("we have " + str(len(tokenized_sentences_by_doc)) + " docs")
         rank_by_dict = self._prep_rank_by_doc_dict(package)
         count = 0
         for docid, sentences in tokenized_sentences_by_doc.items():
-            sentence_by_rank_dict = self.rank_by_document(sentences,word_embeddings_list, package)
+            sentence_by_rank_dict = self.rank_by_document(sentences,word_embeddings_list, package, dimensions)
             for key, value in sentence_by_rank_dict.items():
                 sentence_list_for_that_rank = rank_by_dict[key]
-                sentence_list_for_that_rank.append([docid, value])
+                sentence_list_for_that_rank.append([dimensions, docid, value])
             if count % 100 == 0:
                 print(count)
             count = count + 1
         analysis_key = colutils.incrementing_key("text_rank",package.any_analysis_dict)
         package.any_analysis_dict[analysis_key] = rank_by_dict
         package.log_stage("Conducting text rank. Total document count is " + str(len(package.linked_document_list)) + \
-                          ". For each document the top " + str(len(list(rank_by_dict.keys()))) + " ranked sentences were captured.")
+                          ". For each document the top " + str(len(list(rank_by_dict.keys()))) + " ranked sentences were captured." + \
+                          "\nGlove dimension count: " + str(dimensions))
         return package
 
     def _prep_rank_by_doc_dict(self, package):
@@ -47,11 +53,11 @@ class TextRank:
 
 
 
-    def rank_by_document(self, tokenized_sentences, word_embeddings_list, package):
+    def rank_by_document(self, tokenized_sentences, word_embeddings_list, package, dimensions):
         clean_sentences_list = []
         for linked_sentence_doc in tokenized_sentences:
             clean_sentences_list.append(linked_sentence_doc.raw)
-        sentence_vectors = self.generate_sentence_vectors(clean_sentences_list, word_embeddings_list)
+        sentence_vectors = self.generate_sentence_vectors(clean_sentences_list, word_embeddings_list, dimensions)
 
         scores = self._score_generator(clean_sentences_list,sentence_vectors)
         if len(scores) == 0:
@@ -68,7 +74,7 @@ class TextRank:
 
             return sentence_by_rank_dict
 
-    def generate_sentence_vectors(self, clean_sentences, word_embeddings):
+    def generate_sentence_vectors(self, clean_sentences, word_embeddings, dimensions):
 
         ############################################################################################
         # Now, let’s create vectors for our sentences. We will first fetch vectors (each of size 100 elements)
@@ -78,14 +84,14 @@ class TextRank:
         sentence_vectors = []
         for sentence in clean_sentences:
             if len(sentence) != 0:
-                v = sum([word_embeddings.get(w, np.zeros((100,))) for w in sentence.split()]) / (len(sentence.split()) + 0.001)
+                v = sum([word_embeddings.get(w, np.zeros((dimensions,))) for w in sentence.split()]) / (len(sentence.split()) + 0.001)
 
             else:
-                v = [np.zeros((100,))]
+                v = [np.zeros((dimensions,))]
             #sentence_vectors.append(v)
         return sentence_vectors
 
-    def _word_embeddings(self):
+    def _word_embeddings(self, embeddings_file):
         ########################################################################################
         # we need to repreent words as vectors using word embedding
         # where words or phrases from the vocabulary are mapped to vectors of real numbers
@@ -95,7 +101,7 @@ class TextRank:
         # !unzip glove*.zip
 
         word_embeddings = {}
-        f = open('./resources/nlp_inputs/glove.6B.100d.txt', encoding='utf-8')
+        f = open(embeddings_file, encoding='utf-8')
         for line in f:
             values = line.split()
             word = values[0]

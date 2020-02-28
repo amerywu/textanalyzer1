@@ -7,6 +7,7 @@ resources/flatfiles/
 **/nlp_inputs/
 resources/nltk_data/
 *.csv
+**/*.csv
 .classpath
 .idgen
 .project

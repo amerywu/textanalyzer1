@@ -9,8 +9,10 @@ import tools.pipeline_framework.pipeline as pipeline
 import tools.utils.text_parsing_utils as utils
 import tools.utils.dfutils as dfutils
 import tools.utils.collectionutils as colutils
+import tools.utils.syntax_utils as syntax
 import tools.model.model_classes as merm_model
 import tools.elasticsearch_management.es_connect as es_conn
+
 
 def initiate_run():
     try:
@@ -30,6 +32,7 @@ def initiate_run():
         dependencies_dict["log"] = log
         dependencies_dict["es_conn"] = es_conn
         dependencies_dict["ingestor"] = ingestor
+        dependencies_dict["syntax"] = syntax
 
         log.getLogger().info("Dependencies: ")
         for k, v in dependencies_dict.items():

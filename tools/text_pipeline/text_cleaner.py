@@ -82,10 +82,11 @@ class Lemmatize_Corpus_LinkedDocs:
 
     def perform(self, package: merm_model.PipelinePackage):
         text_utils = package.dependencies_dict["utils"]
+        syntax = package.dependencies_dict["syntax"]
 
         for linked_doc in package.linked_document_list:
             sentence_docs= text_utils.split_linked_doc_by_sentence(linked_doc)
-            sentence_docs = text_utils.lemmatize_tokens(sentence_docs, text_utils.standard_stop_words())
+            sentence_docs = syntax.lemmatize_tokens(sentence_docs, text_utils.standard_stop_words())
             doc_string_lemmatized = ""
             for sentence in sentence_docs:
                 sentence_string_lemmatized = ""

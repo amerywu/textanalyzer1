@@ -75,7 +75,22 @@ class LemmatizeTokens:
     def perform(self,package:merm_model.PipelinePackage):
         env = package.dependencies_dict
         text_utils = env["utils"]
-        text_utils.lemmatize_tokens(package.linked_document_list, text_utils.standard_stop_words())
+        syntax = env["syntax"]
+        syntax.lemmatize_tokens(package.linked_document_list, text_utils.standard_stop_words())
+        package.log_stage("lemmatized tokens")
+        return package
+
+class LemmatizeDocs:
+
+    def __init__(self):
+        pass
+
+
+    def perform(self,package:merm_model.PipelinePackage):
+        env = package.dependencies_dict
+        text_utils = env["utils"]
+        syntax = env["syntax"]
+        syntax.lemmatize_docs(package.linked_document_list, text_utils.standard_stop_words())
         package.log_stage("lemmatized tokens")
         return package
 

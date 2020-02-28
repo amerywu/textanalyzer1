@@ -1,6 +1,7 @@
 
 import tools.model.model_classes as data_models
 import glove
+import copy
 import numpy as np
 from scipy import sparse
 import time
@@ -51,7 +52,8 @@ class GloveModelBuilder:
         glove_train_time = (time.time() - glove_train_start)
         log.getLogger().info("glove_train_time  " + str(glove_train_time))
         glove_list = self.output_format(model.W, vocab)
-        package.any_analysis_dict["glove_output"] = glove_list
+        package.any_analysis_dict[str(dimensions)+"d_glove_output"] = glove_list
+        package.any_analysis_dict["glove_vocab"] = vocab
         package.log_stage("gLoVe model builder: \nunique words: " + str(unique_word_count) +"\ndoc count: " + str(corpus_doc_count) + "\nwindow: " + str(window) + \
                           "\nalpha: " + str(alpha) + "\ndimensions: " + str(dimensions) + "\nx_max: " + str(x_max) + \
                           "\ncooccur_time: " + str(cooccur_time) + "\nglove_time: " + str(glove_time) + "\nglove_train_time: " + str(glove_train_time))
@@ -124,3 +126,46 @@ class GloveModelBuilder:
             cooccurrence_dict[i] = word_dict
         return cooccurrence_dict
 
+class GloveLoadings:
+
+    def __init__(self):
+        pass
+
+    def perform(self, package:data_models.PipelinePackage):
+
+        env = package.dependencies_dict["env"]
+        report_count = env.config.getint("ml_instructions", "glove_loadings_count_to_report")
+        dimensions = env.config.getint("ml_instructions", "glove_dimensions")
+
+        glove_model = package.any_analysis_dict[str(dimensions)+"d_glove_output"]
+        vocab = package.any_analysis_dict["glove_vocab"]
+        inverted_dict = {value: key for key, value in vocab.items()}
+        as_col_dict = {}
+        x = range(len(glove_model[0])-1)
+        for n in x:
+            as_col_dict[n] = []
+
+
+
+        for row_idx, row_real in enumerate(glove_model):
+            row = row_real.copy()
+            word_idx = vocab[row.pop(0)]
+            for col_idx, loading in enumerate(row):
+                as_col_dict[col_idx].append([word_idx,loading])
+
+        final_list = []
+        for vectore_id, vector in as_col_dict.items():
+            vector.sort(key=lambda tup: tup[1])
+            top_list = vector[:report_count]
+            bottom_list = vector[-report_count:]
+            top_bottom_list = top_list + bottom_list
+            new_list = []
+            for tuply_thing in top_bottom_list:
+                new_list.append([str(vectore_id) +","+ str(inverted_dict[tuply_thing[0]]) +"," + str(tuply_thing[1])])
+
+            final_list.append(new_list)
+
+
+        package.any_analysis_dict[str(dimensions)+"d_glove_biggest_loadings"] = final_list
+        package.log_stage("GloveLoadings: ")
+        return package

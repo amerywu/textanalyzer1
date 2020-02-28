@@ -6,7 +6,6 @@ from typing import List
 
 import tools.model.model_classes as merm_model
 import tools.utils.log as log
-import tools.utils.text_parsing_utils as parser
 
 
 class KmeansSentenceFinder:
@@ -73,14 +72,6 @@ class KmeansSentenceFinder:
                 for e in alist:
                     list_of_lists.append(self._list_to_string(key) + "," + e)
         return list_of_lists
-
-    def _break_corpus_as_sentences(self, docs_list: List[merm_model.LinkedDocument]):
-        corpus_as_sentences = []
-        for doc in docs_list:
-            corpus_as_sentences = corpus_as_sentences + parser.split_linked_doc_by_sentence(doc)
-        corpus_as_sentences = parser.tokenize(corpus_as_sentences)
-        corpus_as_sentences = parser.lemmatize_tokens(corpus_as_sentences, parser.standard_stop_words())
-        return corpus_as_sentences
 
     def _find_salient_sentences(self, top_terms_list, package, clusterid):
         all_sentences = self._get_sentences(package)

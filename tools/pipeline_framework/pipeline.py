@@ -29,8 +29,12 @@ _glove_model_builder = [
     (1, "EsExtract"),
     (10, "TextCleaner_DF"),
     (20, "DataframeToListOfLists"),
-    (25, "LemmatizeTokens"),
-    (30, "GloveModelBuilder")
+    (23, "LinkedDocToLinkedSentences"),
+    (24, "LinkedDocCorpusWordCount"),
+    (25, "RemoveDuplicateDocs"),
+    (26, "LinkedDocCorpusWordCount"),
+    (30, "GloveModelBuilder"),
+    (49,"GloveLoadings")
 ]
 
 
@@ -84,7 +88,8 @@ _text_rank_only = [
     (10, "TextCleaner_DF"),
     (20, "DataframeToListOfLists"),
     (35, "LinkedDocCorpusWordCount"),
-    (30, "TextRankGroupedSimple_SubPipe"),
+    (40, "TextRank"),
+    (45, "TextRankGroupedSimple_SubPipe"),
 ]
 
 

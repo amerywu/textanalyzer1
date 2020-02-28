@@ -39,7 +39,6 @@ class TextRankGroupedSimple_SubPipe:
                 package_one_group.any_inputs_dict["corpus_name"] = sub_corpus_name
                 package_one_group = self._analyze_subset(package_one_group,sub_corpus_name,mfst,doc_list)
                 analysis_by_group_text_rank[sub_corpus_name] = package_one_group.any_analysis_dict["text_rank_0"]
-                analysis_by_group_text_rank[sub_corpus_name + "_lemmatized"] = package_one_group.any_analysis_dict["text_rank_1"]
 
                 log_string = log_string + package_one_group.stage_log()
 
@@ -74,15 +73,6 @@ class TextRankGroupedSimple_SubPipe:
         package_one_group = manifest["TextRank"].perform(package_one_group)
         log_string = log_string + "\n\n" + package_one_group.stage_log()
 
-        log.getLogger().info(":Lemmatize_Corpus_LinkedDocs: ")
-        package_one_group = manifest["Lemmatize_Corpus_LinkedDocs"].perform(package_one_group)
-        log_string = log_string + "\n\n" + package_one_group.stage_log()
-
-        log.getLogger().info(":TextRank: ")
-        package_one_group = manifest["TextRank"].perform(package_one_group)
-        log_string = log_string + "\n\n" + package_one_group.stage_log()
-
-        log_string = log_string + "\n\n" + package_one_group.stage_log()
         package_one_group.log_stage(log_string)
 
         return package_one_group

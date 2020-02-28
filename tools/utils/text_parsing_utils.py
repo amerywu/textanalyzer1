@@ -1,7 +1,7 @@
 import re
 from typing import List
 
-from nltk.stem import WordNetLemmatizer
+
 from gensim.parsing.preprocessing import strip_non_alphanum
 from gensim.parsing.preprocessing import strip_punctuation
 
@@ -13,6 +13,7 @@ import tools.model.model_classes as merm_model
 import tools.utils.envutils as env
 import tools.utils.log as log
 import tools.model.model_classes as data_models
+
 
 
 def clean_string_for_tokenizing(textIn):
@@ -192,30 +193,6 @@ def cleanstring_simple(s):
     return clean
 
 
-def lemmatize_tokens(corpora_list: List[merm_model.LinkedDocument], stop_words: List[str]):
-    stoplist = stop_words
-    lemmatized_corpus = []
-    iter_count = 0
-    lemmatizer = WordNetLemmatizer()
-    # log.getLogger().info("Lemmatizing corpus. This can be slow.")
-    for doc in corpora_list:
-        lemmatized_text = []
-        for word in doc.tokens:
-            # print("word: " + word)
-            lemmatized_word = lemmatizer.lemmatize(word)
-            if lemmatized_word is not None:
-                cleanword = clean_string_for_tokenizing(lemmatized_word)
-                if cleanword not in stoplist and len(cleanword) > 1 and not hasNumbers(cleanword):
-                    # print(cleanword)
-                    lemmatized_text.append(cleanword)
-        doc.tokens = lemmatized_text
-        lemmatized_corpus.append(doc)
-        iter_count += 1
-
-        if env.test_env() == True and iter_count > env.test_env_doc_processing_count():
-            log.getLogger().info("DEV MODE: Breaking loop here")
-            break
-    return lemmatized_corpus
 
 
 def tokenize(corpora_list: List[merm_model.LinkedDocument]):

@@ -452,6 +452,20 @@ class Reset:
         package.log_stage("Original linked doc count: " + str(original_linked_doc_size) + "Current linked doc count: " + str(len(package.linked_document_list)))
         return package
 
+class LinkedDocToLinkedSentences:
+    def __init__(self):
+        pass
+
+    def perform(self, package: merm_model.PipelinePackage):
+        original_linked_doc_size = len(package.linked_document_list)
+        text_utils = package.dependencies_dict["utils"]
+        linked_docs_by_sentence = text_utils.corpus_as_tokenized_sentence_linked_doc_list(package)
+        package.linked_document_list = linked_docs_by_sentence
+
+
+        package.log_stage("LinkedDocToLinkedSentences: Original linked doc count: " + str(original_linked_doc_size) + "Current linked doc count: " + str(len(package.linked_document_list)))
+        return package
+
 class FilterTokensByCount:
     def __init__(self):
         pass
