@@ -11,22 +11,25 @@ def run_post_process(package: merm_model.PipelinePackage):
     log.getLogger().info("save text rank results to file")
     path = env.config["job_instructions"]["output_folder"]
     text_rank_results = package.any_analysis_dict["text_rank_all_groups"]
-    count = 0
-    for key in text_rank_results:
-
-        analysis = text_rank_results[key]
-        if "ict" in  type(analysis).__name__:
-            file_name = path +"/" + "TextRank_" + str(key) + ".csv"
-            log.getLogger().info("Saving "+ file_name)
-            with open(file_name, 'w') as f:
-                for k in analysis.keys():
-                    for sentence in analysis[k]:
-                        count = count + 1
-                        f.write("%s,%s,%s\n" % (k, sentence[0], sentence[1]))
+    text_rank_overall = package.any_analysis_dict["text_rank_0"]
+    # count = 0
+    # for key in text_rank_results:
+    #
+    #     analysis = text_rank_results[key]
+    #     if "ict" in  type(analysis).__name__:
+    #         file_name = path +"/" + "TextRank_" + str(key) + ".csv"
+    #         log.getLogger().info("Saving "+ file_name)
+    #         with open(file_name, 'w') as f:
+    #             for k in analysis.keys():
+    #                 for sentence in analysis[k]:
+    #                     count = count + 1
+    #                     f.write("%s,%s,%s\n" % (k, sentence[0], sentence[1]))
     toes = env.config.getboolean("job_instructions","output_to_elasticsearch")
-    log.getLogger().info("Text Rank Results saved " + str(count) + " rows")
+
     if True == toes:
-        _dispatch_to_elastic_search(text_rank_results, package.any_analysis_dict["provider"])
+        _reset_index(package)
+        _dispatch_to_elastic_search_all_groups(text_rank_results, package.any_analysis_dict["provider"])
+        #_dispatch_to_elastic_search(text_rank_overall,package.any_analysis_dict["provider"])
 
 _current_milli_time = lambda: int(round(time.time() * 1000))
 # def _current_milli_time():
@@ -49,8 +52,9 @@ def _generate_doc(src, category, rank, sentence):
     data = {}
     data['category'] = category
     data['rank'] = rank
-    data['docid'] = sentence[0]
-    data['sentence'] = sentence[1]
+    data['dimensions'] = sentence[0]
+    data['docid'] = sentence[1]
+    data['sentence'] = sentence[2]
     data['src'] = src
     data["created"] = _current_milli_time()
     return data
@@ -59,26 +63,41 @@ def _generate_doc(src, category, rank, sentence):
 def _id_generator( ):
     return str(uuid.uuid1())
 
+def _reset_index(package: merm_model.PipelinePackage):
+    env = package.dependencies_dict["env"]
+    reset_index = env.config.getboolean("job_instructions","es_recreate_index")
+    if reset_index == True:
+        ingestor.delete_index("corpus_text_rank")
+        ingestor.create_index(_newindex_json(), "corpus_text_rank")
 
-def _dispatch_to_elastic_search(text_rank_results, src):
-    count = 0
-    ingestor.delete_index("corpus_text_rank")
-    ingestor.create_index(_newindex_json(), "corpus_text_rank")
+
+
+def _dispatch_to_elastic_search_all_groups(text_rank_results, src):
+
+
     for category in text_rank_results:
         analysis = text_rank_results[category]
         if type(analysis) is dict:
+            _dispatch_to_elastic_search(analysis,src,category)
 
-            for rank in analysis.keys():
-                bulk_list = []
+def _dispatch_to_elastic_search(analysis, src, category = "OVERALL"):
+    bulk_list = []
+    count = 0
+    for rank in analysis.keys():
 
-                for sentence in analysis[rank]:
-                    count = count + 1
-                    if count % 1000 == 0:
-                        print(count)
-                    bulk_list.append(_index_dict("corpus_text_rank", src, category,rank, sentence))
-                    #ingestor._dispatch("corpus_text_rank", _id_generator(),json)
+
+        for sentence in analysis[rank]:
+            count = count + 1
+            if count % 1000 == 0:
+                print(count)
                 log.getLogger().info("dispatching")
                 ingestor._dispatch_bulk("corpus_text_rank", bulk_list)
+                bulk_list = []
+
+            bulk_list.append(_index_dict("corpus_text_rank", src, category,rank, sentence))
+            #ingestor._dispatch("corpus_text_rank", _id_generator(),json)
+
+    ingestor._dispatch_bulk("corpus_text_rank", bulk_list)
     log.getLogger().info("Dispatched "+ str(count) + " rows to ES")
 
 
@@ -98,6 +117,9 @@ def _newindex_json():
              "src":{
                 "type":"text"
              },
+              "dimensions": {
+                  "type": "keyword"
+              },
              "category":{
                 "type":"keyword"
              },

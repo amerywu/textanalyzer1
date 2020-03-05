@@ -21,10 +21,17 @@ def list_to_csv(l):
     if type(l) is list or type(l) is tuple:
         s = ""
         for e in l:
-            s = s + "," + str(e)
+            s = s + " " + str(e)
         return s
     else:
         return str(l)
+
+def _file_names(analysis, path, suffix):
+    files = {}
+    for k in analysis.keys():
+        files[k] = open(path +"/glove_model_"+ k + "_" +suffix+".csv", 'w')
+    return files
+
 
 def run_post_process(package: merm_model.PipelinePackage):
     log.getLogger().info("save dictionaries to file")
@@ -35,18 +42,34 @@ def run_post_process(package: merm_model.PipelinePackage):
     for key in package.any_analysis_dict:
 
         analysis = package.any_analysis_dict[key]
-        if  type(analysis) is dict and len(analysis) > 0:
-            file_name = path +"/"+key+"_"+suffix+".csv"
-            with open(file_name, 'w') as f:
-                for k in analysis.keys():
-                    _process_line(f, k, analysis)
+        if  type(analysis) is dict and len(analysis) > 0 and "glove" in key.lower():
+            files = _file_names(analysis, path, suffix)
+            for k in analysis.keys():
+                _process_line(files[k], k, analysis)
+        elif type(analysis) is list:
+           _process_list(analysis, suffix, path, key)
+
+
+def _process_list(analysis, suffix, path, key):
+    if type(analysis[0]) is list:
+        separator = " "
+        file_name = path + "/" + key + "_" + suffix + ".csv"
+        if len(analysis[0]) > 0 and type(analysis[0][0]) is list:
+            with open(file_name, "w", newline="") as f:
+                for rows in analysis:
+                    writer = csv.writer(f, delimiter=separator)
+                    writer.writerows(rows)
+        else:
+            with open(file_name, "w", newline="") as f:
+                writer = csv.writer(f, delimiter=separator)
+                writer.writerows(analysis)
 
 def _process_line(f, k, analysis):
     if type(analysis) is dict:
         if type(analysis[k]) is list:
             for alist in analysis[k]:
                 if type(alist) is list:
-                        line = key_to_string(k) + "," + list_to_csv(alist) + "\n"
+                        line = list_to_csv(alist) + "\n"
                         _write(f,line)
                 else:
                     line = key_to_string(k) + "," + key_to_string(alist) + "\n"
@@ -66,9 +89,7 @@ def _process_line(f, k, analysis):
                 else:
                     line = key_to_string(k) + "," +key_to_string(key) + "," + key_to_string(value) + "\n"
                     _write(f,line)
-        else:
-            line = key_to_string(k) +","+ key_to_string(analysis[k]) + "\n"
-            _write(f, line)
+
     else:
         line = key_to_string(k) +","+key_to_string(analysis)+"\n"
         _write(f, line)

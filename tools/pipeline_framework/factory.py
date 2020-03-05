@@ -28,7 +28,7 @@ from tools.text_pipeline import analysis_to_linkeddocs_conversion
 from tools.text_pipeline import gensim_sentence_finder
 from tools.text_pipeline import kmeans_sentence_finder
 
-
+from tools.text_sub_pipeline import glove_grouped_simple
 from tools.text_sub_pipeline import text_rank_grouped
 from tools.text_sub_pipeline import text_rank_grouped_simple
 from tools.text_sub_pipeline import gensim_lda_grouped
@@ -62,6 +62,7 @@ class PipelineManifest:
         "GensimTopicReduction" : tools.text_pipeline.gensim_latent_dirichlet_allocation.GensimTopicReduction(),
         "GensimTopicSimilarityAnalysis": tools.text_pipeline.gensim_latent_dirichlet_allocation.GensimTopicSimilarityAnalysis(),
         "GensimWord2Vec" : tools.text_pipeline.gensim_word2vec.GensimWord2Vec(),
+        "GloveGrouped_SubPipe" : tools.text_sub_pipeline.glove_grouped_simple.GloveGrouped_SubPipe(),
         "GloveModelBuilder" : tools.text_pipeline.glove_trainer.GloveModelBuilder(),
         "GloveLoadings" : tools.text_pipeline.glove_trainer.GloveLoadings(),
         "JobDfAnalysis": tools.text_pipeline.job_df_analysis.JobDfAnalysis(),

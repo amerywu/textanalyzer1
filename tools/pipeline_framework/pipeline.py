@@ -26,7 +26,7 @@ _gensim_lda_steps = [
 
 
 _glove_model_builder = [
-    (1, "EsExtract"),
+    (1,  "EsExtract"),
     (10, "TextCleaner_DF"),
     (20, "DataframeToListOfLists"),
     (23, "LinkedDocToLinkedSentences"),
@@ -34,7 +34,41 @@ _glove_model_builder = [
     (25, "RemoveDuplicateDocs"),
     (26, "LinkedDocCorpusWordCount"),
     (30, "GloveModelBuilder"),
-    (49,"GloveLoadings")
+    (49, "GloveLoadings")
+]
+
+_glove_model_builder_rigorous = [
+    (1,  "EsExtract"),
+    (10, "TextCleaner_DF"),
+    (20, "DataframeToListOfLists"),
+    (22, "LinkedDocCorpusWordCount"),
+    (24, "RemoveDuplicateDocs"),
+    (25, "StopWordRemoval"),
+    (28, "LinkedDocCorpusWordCount"),
+    (33, "LinkedDocCorpusStopWordGenerator"),
+    (43, "StopWordRemoval"),
+    (53, "FilterTokensByCount"),
+    (63, "TokensToDoc"),
+    (73, "LinkedDocCorpusWordCount"),
+    (95, "GloveModelBuilder"),
+    (97, "GloveLoadings")
+]
+
+_glove_model_builder_rigorous_grouped = [
+    (1,  "EsExtract"),
+    (10, "TextCleaner_DF"),
+    (20, "DataframeToListOfLists"),
+    (22, "LinkedDocCorpusWordCount"),
+    (24, "RemoveDuplicateDocs"),
+    (25, "StopWordRemoval"),
+    (28, "LinkedDocCorpusWordCount"),
+    (33, "LinkedDocCorpusStopWordGenerator"),
+    (43, "StopWordRemoval"),
+    (53, "FilterTokensByCount"),
+    (63, "TokensToDoc"),
+    (73, "LinkedDocCorpusWordCount"),
+    (91, "GloveModelBuilder"),
+    (95, "GloveGrouped_SubPipe")
 ]
 
 
@@ -262,6 +296,10 @@ def pick_pipeline():
         return _word2vec
     elif pipeline_name == "_glove_model_builder":
         return _glove_model_builder
+    elif pipeline_name == "_glove_model_builder_rigorous":
+        return _glove_model_builder_rigorous
+    elif pipeline_name == "_glove_model_builder_rigorous_grouped":
+        return _glove_model_builder_rigorous_grouped
     else:
         log.getLogger().warning(str(pipeline_name) + " is invalid. Please configure tools.ini and create a relevant list of steps in pipeline.py within this script")
         return []

@@ -117,8 +117,6 @@ class StopWordRemoval:
         return key
 
     def perform(self, package: merm_model.PipelinePackage):
-
-
         log.getLogger().info("StopWordRemoval")
         stop_words = []
         load_source = ""

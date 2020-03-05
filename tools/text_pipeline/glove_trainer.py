@@ -53,7 +53,7 @@ class GloveModelBuilder:
         log.getLogger().info("glove_train_time  " + str(glove_train_time))
         glove_list = self.output_format(model.W, vocab)
         package.any_analysis_dict[str(dimensions)+"d_glove_output"] = glove_list
-        package.any_analysis_dict["glove_vocab"] = vocab
+        package.any_analysis_dict["gl0ve_vocab"] = vocab
         package.log_stage("gLoVe model builder: \nunique words: " + str(unique_word_count) +"\ndoc count: " + str(corpus_doc_count) + "\nwindow: " + str(window) + \
                           "\nalpha: " + str(alpha) + "\ndimensions: " + str(dimensions) + "\nx_max: " + str(x_max) + \
                           "\ncooccur_time: " + str(cooccur_time) + "\nglove_time: " + str(glove_time) + "\nglove_train_time: " + str(glove_train_time))

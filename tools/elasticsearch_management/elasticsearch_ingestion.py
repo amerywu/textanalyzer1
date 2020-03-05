@@ -46,7 +46,7 @@ def _dispatch_bulk(index_name, data_dict, retry_count=0):
 
         log.getLogger().error(msg)
         if "time" in msg.lower() and retry_count < 10:
-            _dispatch(index_name,data_dict, retry_count)
+            _dispatch_bulk(index_name,data_dict, retry_count)
         else:
             pass
 
