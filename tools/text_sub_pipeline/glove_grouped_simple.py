@@ -22,6 +22,7 @@ class GloveGrouped_SubPipe:
 
         grouped_linked_docs = grouped_doc_package.linked_document_list
         analysis_by_group_glove = {}
+        analysis_by_group_glove_loadings = {}
         env = package.dependencies_dict["env"]
         dimensions = env.config.getint("ml_instructions", "glove_dimensions")
         minimum_doc_count = env.config.getint('ml_instructions', 'minimum_doc_count')
@@ -39,10 +40,12 @@ class GloveGrouped_SubPipe:
                 package_one_group.any_inputs_dict["corpus_name"] = sub_corpus_name
                 package_one_group = self._analyze_subset(package_one_group,sub_corpus_name,mfst,doc_list)
                 analysis_by_group_glove[sub_corpus_name] = package_one_group.any_analysis_dict[str(dimensions)+"d_glove_output"]
+                analysis_by_group_glove_loadings[sub_corpus_name] = package_one_group.any_analysis_dict[str(dimensions) + "d_glove_biggest_loadings"]
 
                 log_string = log_string + package_one_group.stage_log()
 
         package.any_analysis_dict["glove_all_groups"] = analysis_by_group_glove
+        package.any_analysis_dict["glove_all_loadings"] = analysis_by_group_glove_loadings
 
         new_package = merm_model.PipelinePackage(package.model,
                                                  package.corpus,
@@ -70,6 +73,10 @@ class GloveGrouped_SubPipe:
         log_string = log_string + package_one_group.stage_log()
 
         package_one_group = manifest["GloveModelBuilder"].perform(package_one_group)
+        log_string = log_string + "\n\n" + package_one_group.stage_log()
+
+
+        package_one_group = manifest["GloveLoadings"].perform(package_one_group)
         log_string = log_string + "\n\n" + package_one_group.stage_log()
 
         package_one_group.log_stage(log_string)

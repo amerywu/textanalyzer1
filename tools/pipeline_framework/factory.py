@@ -81,6 +81,7 @@ class PipelineManifest:
         "MergeCategories1" : tools.text_pipeline.pipeline_utils.MergeCategories1(),
         "NounPhraseResultsToLinkedDocList": tools.text_pipeline.analysis_to_linkeddocs_conversion.NounPhraseResultsToLinkedDocList(),
         "PartOfSpeechAnalyzerFromTextRank" : tools.text_pipeline.part_of_speech_analyzer.PartOfSpeechAnalyzerFromTextRank(),
+        "PorterStemmer" : tools.text_pipeline.text_cleaner.PorterStemmer(),
         "RakeAnalysis": tools.text_pipeline.rake_analysis.RakeAnalysis(),
         "RakeAnalysisFromTextRank": tools.text_pipeline.rake_analysis.RakeAnalysisFromTextRank(),
         "RakeResultsToLinkedDocList" : tools.text_pipeline.analysis_to_linkeddocs_conversion.RakeResultsToLinkedDocList(),

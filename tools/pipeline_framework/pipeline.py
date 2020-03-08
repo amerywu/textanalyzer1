@@ -54,6 +54,29 @@ _glove_model_builder_rigorous = [
     (97, "GloveLoadings")
 ]
 
+_glove_model_builder_rigorous_evened = [
+    (1,  "EsExtract"),
+    (10, "TextCleaner_DF"),
+    (15, "DataframeToListOfLists"),
+    (20, "LinkedDocCorpusWordCount"),
+    (25, "RemoveDuplicateDocs"),
+    (29, "CountBySpaceAndGroup"),
+    (30, "EvenBySpace"),
+    (35, "CountBySpaceAndGroup"),
+    (40, "StopWordRemoval"),
+    (45, "LinkedDocCorpusWordCount"),
+    (50, "LinkedDocCorpusStopWordGenerator"),
+    (55, "StopWordRemoval"),
+    (58, "PorterStemmer"),
+    (60, "FilterTokensByCount"),
+    (61, "LinkedDocCorpusWordCount"),
+    (65, "TokensToDoc"),
+    (70, "LinkedDocCorpusWordCount"),
+    (75, "GloveModelBuilder"),
+    (80, "GloveLoadings")
+]
+
+
 _glove_model_builder_rigorous_grouped = [
     (1,  "EsExtract"),
     (10, "TextCleaner_DF"),
@@ -68,6 +91,7 @@ _glove_model_builder_rigorous_grouped = [
     (63, "TokensToDoc"),
     (73, "LinkedDocCorpusWordCount"),
     (91, "GloveModelBuilder"),
+    (93, "GloveLoadings"),
     (95, "GloveGrouped_SubPipe")
 ]
 
@@ -300,6 +324,8 @@ def pick_pipeline():
         return _glove_model_builder_rigorous
     elif pipeline_name == "_glove_model_builder_rigorous_grouped":
         return _glove_model_builder_rigorous_grouped
+    elif pipeline_name == "_glove_model_builder_rigorous_evened":
+        return  _glove_model_builder_rigorous_evened
     else:
         log.getLogger().warning(str(pipeline_name) + " is invalid. Please configure tools.ini and create a relevant list of steps in pipeline.py within this script")
         return []
@@ -314,7 +340,7 @@ def step_through(package:merm_model.PipelinePackage, pipeline_steps, log_string)
             package = factory.next_step(step_tuple[1], package)
             end_time = time.time() - start_time
             log.getLogger().info("Time to complete: " + str(end_time))
-            log_string = log_string + "\n\n------------\n\n" + step_tuple[1]+ "\n\n"+package.stage_log() +"\n Time: " + str(end_time)
+            log_string = log_string + "\n\n------------\n\n" + step_tuple[1]+ "\n\n"+package.stage_log() +"\nTime: " + str(end_time)
         else:
             log.getLogger().warning("Continue run is FALSE")
         package.log_stage(log_string)

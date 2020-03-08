@@ -26,10 +26,11 @@ def list_to_csv(l):
     else:
         return str(l)
 
-def _file_names(analysis, path, suffix):
+def _file_names(analysis, path, key, suffix):
+    dimensions = env.config.getint("ml_instructions", "glove_dimensions")
     files = {}
     for k in analysis.keys():
-        files[k] = open(path +"/glove_model_"+ k + "_" +suffix+".csv", 'w')
+        files[k] = open(path +"/_"+ str(dimensions) + "d_" + key + "_" + k + "_" +suffix+".csv", 'w')
     return files
 
 
@@ -43,10 +44,10 @@ def run_post_process(package: merm_model.PipelinePackage):
 
         analysis = package.any_analysis_dict[key]
         if  type(analysis) is dict and len(analysis) > 0 and "glove" in key.lower():
-            files = _file_names(analysis, path, suffix)
+            files = _file_names(analysis, path, key, suffix)
             for k in analysis.keys():
                 _process_line(files[k], k, analysis)
-        elif type(analysis) is list:
+        elif type(analysis) is list and "glove" in key.lower():
            _process_list(analysis, suffix, path, key)
 
 
@@ -69,6 +70,13 @@ def _process_line(f, k, analysis):
         if type(analysis[k]) is list:
             for alist in analysis[k]:
                 if type(alist) is list:
+                    if type(alist[0]) is list:
+                        for sublist in alist:
+                            line = ""
+                            for entry in sublist:
+                                line = line + str(entry) + ","
+                            _write(f, line + "\n")
+                    else:
                         line = list_to_csv(alist) + "\n"
                         _write(f,line)
                 else:

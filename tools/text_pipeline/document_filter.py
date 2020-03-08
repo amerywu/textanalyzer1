@@ -2,6 +2,8 @@ import tools.model.model_classes as merm_model
 import tools.utils.log as log
 import statistics as stats
 from random import shuffle
+import time
+
 
 class SubsetData:
 
@@ -141,11 +143,11 @@ class StopWordRemoval:
                 stop_words = stop_list_string.split("\n")
             load_source = "from " + stop_list_path
 
+        stop_words_set = set(stop_words)
+
         for linked_doc in package.linked_document_list:
-            for word in linked_doc.tokens:
-                if  word in stop_words:
-                    # log.getLogger().debug("removing " + word)
-                    linked_doc.tokens.remove(word)
+            linked_doc.tokens = [word for word in linked_doc.tokens if word not in stop_words_set]
+
 
         package.log_stage(
             "Removed all stop words from the corpus tokens (i.e., bag of words). The stop words were loaded " + load_source +"\nStop word count is " + str(len(stop_words)))
@@ -314,14 +316,25 @@ class EvenBySpace:
     def __init__(self):
         pass
 
+
+    def _filter_categories(self, env, categories_dict):
+        category_count_list_all = list(categories_dict.values())
+        floor_min = env.config.getint("ml_instructions", "filter_category_absolute_minimum")
+
+        category_count_list = []
+        for count in category_count_list_all:
+            if count >= floor_min:
+                category_count_list.append(count)
+        return category_count_list
+
     def perform(self, package: merm_model.PipelinePackage):
+        env = package.dependencies_dict["env"]
         categories_dict = package.any_inputs_dict["Sample_By_Space"]
         package.uncache_linked_docs()
         linked_docs = package.linked_document_list.copy()
-        category_count_list = list(categories_dict.values())
-        current_category_count = {}
+        category_count_list = self._filter_categories(env,categories_dict)
 
-        env = package.dependencies_dict["env"]
+
         dynamic_threshold = env.config.getboolean("ml_instructions", "filter_category_threshold_type_dynamic")
         median = stats.median(category_count_list)
 
@@ -338,6 +351,7 @@ class EvenBySpace:
         shuffle(package.linked_document_list)
 
         new_doc_list = []
+        current_category_count = {}
         for linked_doc in linked_docs:
 
             if categories_dict[linked_doc.space] < min_threshold:
@@ -366,11 +380,24 @@ class EvenByGroup:
     def __init__(self):
         pass
 
+
+    def _filter_groups(self, env, group_dict):
+        group_count_list_all = list(group_dict.values())
+        floor_min = env.config.getint("ml_instructions", "filter_group_absolute_minimum")
+
+        group_count_list = []
+        for count in group_count_list_all:
+            if count >= floor_min:
+                group_count_list
+        return group_count_list
+
+
     def perform(self, package: merm_model.PipelinePackage):
-        group_dict = package.any_inputs_dict["Sample_By_Group"]
-        group_count_list = list(group_dict.values())
-        current_category_count = {}
         env = package.dependencies_dict["env"]
+        group_dict = package.any_inputs_dict["Sample_By_Group"]
+        group_count_list = self._filter_groups(env, group_dict)
+        current_group_count = {}
+
 
         package.uncache_linked_docs()
         linked_docs = package.linked_document_list.copy()
@@ -401,15 +428,15 @@ class EvenByGroup:
                 #package.linked_document_list.remove(linked_doc)
                 continue
             elif group_dict[linked_doc.groupedBy] > max_threshold:
-                if linked_doc.groupedBy in current_category_count.keys():
+                if linked_doc.groupedBy in current_group_count.keys():
 
-                    if current_category_count[linked_doc.groupedBy] > max_threshold:
+                    if current_group_count[linked_doc.groupedBy] > max_threshold:
                         continue
                     else:
                         new_doc_list.append(linked_doc)
-                        current_category_count[linked_doc.groupedBy] = current_category_count[linked_doc.groupedBy] + 1
+                        current_group_count[linked_doc.groupedBy] = current_group_count[linked_doc.groupedBy] + 1
                 else:
-                    current_category_count[linked_doc.groupedBy]  = 0
+                    current_group_count[linked_doc.groupedBy]  = 0
                     new_doc_list.append(linked_doc)
             else:
                 new_doc_list.append(linked_doc)

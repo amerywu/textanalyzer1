@@ -2,6 +2,7 @@ import tools.model.model_classes as merm_model
 import tools.utils.log as log
 
 
+
 class TextCleaner_Df_Corpus:
 
     def __init__(self):
@@ -64,9 +65,6 @@ class TextCleaner_Df_Corpus:
         " convert_to_lower = " + str(convert_to_lower) )
         return package
 
-
-
-
     def _split_to_sentences(self, document):
         if document is not None:
 
@@ -112,4 +110,22 @@ class TokensToDoc:
                 new_sentence = new_sentence + token + " "
             linked_doc.raw = new_sentence
         package.log_stage("Converted tokens to concatenated strings")
+        return package
+
+class PorterStemmer:
+
+    def __init__(self):
+        pass
+
+    def perform(self, package: merm_model.PipelinePackage):
+        from nltk.stem import PorterStemmer
+        pstemmer = PorterStemmer()
+        for linked_doc in package.linked_document_list:
+
+            stemmed_tokens = []
+            for token in linked_doc.tokens:
+                stemmed = pstemmer.stem(token)
+                stemmed_tokens.append(stemmed)
+            linked_doc.tokens = stemmed_tokens
+        package.log_stage("Stemmed tokens")
         return package
