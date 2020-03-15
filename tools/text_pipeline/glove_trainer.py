@@ -6,6 +6,7 @@ import numpy as np
 from scipy import sparse
 import time
 import tools.utils.log as log
+import statistics as stats
 
 class GloveModelBuilder:
 
@@ -17,6 +18,7 @@ class GloveModelBuilder:
         for doc in package.linked_document_list:
             tokens_corpora.append(doc.tokens)
         return  tokens_corpora
+
 
     def perform(self, package:data_models.PipelinePackage):
         corpus = self._tokens_list_of_lists(package)
@@ -39,6 +41,7 @@ class GloveModelBuilder:
         cooccur_time = (time.time() - cooccur_start)
         log.getLogger().info("cooccur time " + str(cooccur_time))
         cooccurrence_dict = self.format_for_glove(cooccurrences)
+        package.any_analysis_dict["cooccurrence_stats"] = self._cooccur_descriptives(cooccurrence_dict)
 
 
         for alpha in alpha_list:
@@ -47,10 +50,29 @@ class GloveModelBuilder:
                     self._do_glove(package, cooccurrence_dict, dimensions, alpha, x_max, vocab)
 
 
-        package.log_stage("gLoVe model builder: \nunique words: " + str(unique_word_count) +"\ndoc count: " + str(corpus_doc_count) + "\nwindow: " + str(window) + \
-                          "\nalphas: " + str(alpha_list) + "\ndimensions_list: " + str(dimensions_list) + "\nx_max_list: " + str(x_max_list) )
+        package.log_stage("\ncooccurrences: average: " + str(package.any_analysis_dict["cooccurrence_stats"]["average"]) + "\ncooccurrences: median: " + str(package.any_analysis_dict["cooccurrence_stats"]["median"])  + \
+                        "\ncooccurrences: stdev: " + str(package.any_analysis_dict["cooccurrence_stats"]["stdev"])  + \
+                        "\ngLoVe model builder: \nunique words: " + str(unique_word_count) +"\ndoc count: " + str(corpus_doc_count) + "\nwindow: " + str(window) + \
+                        "\nalphas: " + str(alpha_list) + "\ndimensions_list: " + str(dimensions_list) + "\nx_max_list: " + str(x_max_list) )
 
         return package
+
+    def _cooccur_descriptives(self, cooccurrence_dict):
+        all_values_list = []
+        for word_list in cooccurrence_dict.values():
+            for cooccur in word_list.values():
+                all_values_list.append(cooccur)
+
+        average = stats.mean(all_values_list)
+        median = stats.median(all_values_list)
+        stdev = stats.stdev(all_values_list)
+        return_dict = {}
+        return_dict["average"] = average
+        return_dict["median"] = median
+        return_dict["stdev"] = stdev
+        return return_dict
+
+
 
     def _do_glove(self, package, cooccurrence_dict, dimensions, alpha, x_max, vocab):
         glove_start = time.time()
@@ -141,7 +163,10 @@ class GloveModelBuilder:
 
 class GloveLoadings:
 
+
+
     def __init__(self):
+        self.variance_dict = []
         pass
 
     def perform(self, package:data_models.PipelinePackage):
@@ -155,6 +180,7 @@ class GloveLoadings:
             self._process_loadings(package,glove_output_key, report_count)
 
         package.log_stage("GloveLoadings: ")
+        package.any_analysis_dict["glove_variance"] = self.variance_dict
         return package
 
     def _generate_col_dict(self, glove_model, vocab):
@@ -170,13 +196,28 @@ class GloveLoadings:
                 as_col_dict[col_idx].append([word_idx, loading])
         return as_col_dict
 
+    def _process_variances(self, as_col_dict, glove_output_key):
+
+        uber_list = []
+
+        variance_string = glove_output_key + ","
+        for vector_id, vector in as_col_dict.items():
+            unzipped = [ j for i, j in vector ]
+            variance = stats.variance(unzipped)
+            variance_string = variance_string + str('%.8f'%(variance)) + ","
+        uber_list.append(variance_string)
+
+        self.variance_dict.append(uber_list)
+
     def _process_loadings(self, package, glove_output_key, report_count ):
         glove_model = package.any_analysis_dict[glove_output_key]
         vocab = package.any_analysis_dict["gl0ve_vocab"]
         inverted_dict = {value: key for key, value in vocab.items()}
         as_col_dict =  self._generate_col_dict(glove_model, vocab)
-
+        vocab_freq = package.any_analysis_dict["corpus_word_frequency"]
         final_list = []
+        self._process_variances(as_col_dict,glove_output_key)
+
         for vectore_id, vector in as_col_dict.items():
             vector.sort(key=lambda tup: tup[1])
             top_list = vector[:report_count]
@@ -184,9 +225,9 @@ class GloveLoadings:
             top_bottom_list = top_list + bottom_list
             new_list = []
             for tuply_thing in top_bottom_list:
-                new_list.append([str(vectore_id) + "," + str(inverted_dict[tuply_thing[0]]) + "," + str(
-                    tuply_thing[1]) + "," + str(abs(tuply_thing[1]))])
-
+                word = inverted_dict[tuply_thing[0]]
+                word_frq = vocab_freq[word]
+                new_list.append([str(vectore_id) + "," + word + "," + str(tuply_thing[1]) + "," + str(abs(tuply_thing[1])) + "," + str(word_frq)])
             final_list.append(new_list)
 
         package.any_analysis_dict[glove_output_key + "_biggest_loadings"] = final_list

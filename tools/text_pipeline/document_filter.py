@@ -514,6 +514,7 @@ class CombineSentencesToDocs:
 
     def perform(self, package: merm_model.PipelinePackage):
         env = package.dependencies_dict["env"]
+        utils = package.dependencies_dict["utils"]
         original_count = len(package.linked_document_list)
         merge_by = env.config["ml_instructions"]["merge_docs_field"]
         merged_docs_dict = {}
@@ -522,19 +523,25 @@ class CombineSentencesToDocs:
         for sub_doc in package.linked_document_list:
             if merge_by == "groupedBy":
                 key = sub_doc.groupedBy
+            elif merge_by == "uid":
+                key = sub_doc.uid
             else:
                 key = sub_doc.space
 
             if key in merged_docs_dict.keys():
-                merged_docs_dict[key]
-                merged_docs_dict[key].raw = merged_docs_dict[key].raw + " " + sub_doc.raw
+                merged_docs_dict[key].raw = merged_docs_dict[key].raw + ". " + sub_doc.raw
                 merged_docs_dict[key].tokens = merged_docs_dict[key].tokens + sub_doc.tokens
             else:
                 merged_docs_dict[key] = sub_doc
 
         new_linked_doc_list = list(merged_docs_dict.values())
+        for full_doc in new_linked_doc_list:
+            full_doc.raw = utils.cleanstring_doubled_period(full_doc.raw)
         package.linked_document_list = new_linked_doc_list
+
 
 
         package.log_stage("Merged documents by " + str(merge_by) + " tokens. \n Original doc count: " + str(original_count) + "\nNew doc count: " + str(len(package.linked_document_list)) )
         return package
+
+

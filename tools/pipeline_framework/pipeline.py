@@ -145,9 +145,15 @@ _text_rank_only = [
     (1, "EsExtract"),
     (10, "TextCleaner_DF"),
     (20, "DataframeToListOfLists"),
-    (35, "LinkedDocCorpusWordCount"),
-    (40, "TextRank"),
-    (45, "TextRankGroupedSimple_SubPipe"),
+    (30, "LinkedDocCorpusWordCount"),
+    (50, "RemoveDuplicateDocs"),
+    (55, "LinkedDocToLinkedSentences"),
+    (58, "PorterStemmer"),
+    (61, "TokensToDoc"),
+    (65, "CombineSentencesToDocs"),
+    (70, "LinkedDocCorpusWordCount"),
+    (80, "TextRank"),
+    (85, "TextRankGroupedSimple_SubPipe"),
 ]
 
 

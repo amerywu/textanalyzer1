@@ -189,10 +189,12 @@ def clean_raw_content(textIn):
 
 
 def cleanstring_simple(s):
-    clean = s.replace('"', '').replace("\\n", "").replace(":", ";").replace("\\", " ")
+    clean = s.replace('"', '').replace("\\n", "").replace(":", ";").replace("\\", " ").replace("..", ".")
     return clean
 
-
+def cleanstring_doubled_period(s):
+    clean = s.replace("..", ".").replace(". .",".").replace(" .", ".")
+    return clean
 
 
 def tokenize(corpora_list: List[merm_model.LinkedDocument]):

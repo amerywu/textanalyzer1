@@ -29,7 +29,7 @@ def run_post_process(package: merm_model.PipelinePackage):
     if True == toes:
         _reset_index(package)
         _dispatch_to_elastic_search_all_groups(text_rank_results, package.any_analysis_dict["provider"])
-        #_dispatch_to_elastic_search(text_rank_overall,package.any_analysis_dict["provider"])
+        _dispatch_to_elastic_search(text_rank_overall,package.any_analysis_dict["provider"])
 
 _current_milli_time = lambda: int(round(time.time() * 1000))
 # def _current_milli_time():
